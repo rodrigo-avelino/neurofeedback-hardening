@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
+using NeuroMock.Core.Licenciamento;
+using NeuroMock.Fornecedor;
 
 namespace RegressaoMate;
 
@@ -63,9 +65,24 @@ public sealed class CopiaDoAlvo : IDisposable
     public void InstalarLicenca(string conteudoJson) =>
         File.WriteAllText(Caminho(Alvo.ArquivoLicenca), conteudoJson);
 
-    /// <summary>Licença legítima emitida pelo fornecedor para a "Clínica de Teste".</summary>
+    /// <summary>
+    /// Licença legítima que o fornecedor emitiu para a "Clínica de Teste", em outra máquina. É a
+    /// licença que um pirata copiaria (F3.1).
+    /// </summary>
     public void InstalarLicencaDeTeste() =>
         File.Copy(Path.Combine(Ambiente.Fixtures, "licenca-valida.json"), Caminho(Alvo.ArquivoLicenca), overwrite: true);
+
+    /// <summary>Licença emitida na hora pelo fornecedor para o código de máquina informado.</summary>
+    public void InstalarLicencaParaAMaquina(string maquina, string chavePrivadaPem)
+    {
+        using var chave = ChavesFornecedor.CarregarPrivada(chavePrivadaPem);
+        var validade = DateOnly.FromDateTime(DateTime.Today).AddDays(30);
+        InstalarLicenca(EmissorLicenca.Emitir(chave, "Clínica de Teste", validade, maquina));
+    }
+
+    /// <summary>Código da máquina que o alvo gravou na solicitação de ativação, se gravou.</summary>
+    public string? LerCodigoDaMaquina() =>
+        ArquivoLicenca.LerSolicitacao(Caminho(ArquivoLicenca.NomeSolicitacao))?.Maquina;
 
     public void RemoverLicenca() => File.Delete(Caminho(Alvo.ArquivoLicenca));
 

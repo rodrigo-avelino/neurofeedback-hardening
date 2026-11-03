@@ -6,11 +6,17 @@
     atacam copias dele e comparam cada resultado com security-tests/estado-folhas.json. No fim,
     este script resume o resultado por folha; na CI, o resumo vai para a pagina da execucao.
 .EXAMPLE
-    ./security-tests/run-all.ps1 -Artefato .\neuromock-v0-win-x64.zip
+    ./security-tests/run-all.ps1 -Artefato .\neuromock-v1-win-x64.zip
+.EXAMPLE
+    ./security-tests/run-all.ps1 -Artefato .\neuromock-v1-win-x64.zip -ChavePrivada $HOME\.neuromock\fornecedor-p256.pem
 #>
 param(
     [Parameter(Mandatory = $true)]
-    [string] $Artefato
+    [string] $Artefato,
+
+    # PEM da chave privada do fornecedor (so o blue tem; na esteira vem do secret). Sem ela,
+    # fora da esteira, o controle positivo confere so a recusa sem licenca.
+    [string] $ChavePrivada
 )
 
 $ErrorActionPreference = 'Stop'
@@ -29,6 +35,7 @@ $env:NFH_ESTADO = Join-Path $raiz 'estado-folhas.json'
 $env:NFH_FIXTURES = Join-Path $raiz 'fixtures'
 $env:NFH_TRABALHO = $trabalho
 $env:NFH_RESULTADOS = Join-Path $trabalho 'resultados.jsonl'
+if ($ChavePrivada) { $env:NFH_CHAVE_PRIVADA = Get-Content -Raw (Resolve-Path $ChavePrivada).Path }
 
 $hash = (Get-FileHash $artefatoAbs -Algorithm SHA256).Hash.ToLowerInvariant()
 Write-Host "Alvo: $artefatoAbs"
@@ -58,7 +65,10 @@ foreach ($folha in $folhas) {
 }
 
 $controle = $resultados | Where-Object { $_.controle } | Select-Object -Last 1
-$textoControle = if (-not $controle) { 'nao rodou' } elseif ($controle.ok) { 'ok' } else { "FALHOU: $($controle.motivo)" }
+$textoControle = if (-not $controle) { 'nao rodou' }
+    elseif (-not $controle.ok) { "FALHOU: $($controle.motivo)" }
+    elseif ($controle.parcial) { 'parcial (sem a chave do fornecedor: so a recusa sem licenca foi conferida)' }
+    else { 'ok' }
 $abertas = @($folhas | Where-Object { $_.Value -eq 'aberta' }).Count
 $ativas = @($folhas | Where-Object { $_.Value -ne 'inativa' }).Count
 
