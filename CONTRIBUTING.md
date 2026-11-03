@@ -10,6 +10,8 @@ team estão em [docs/06-plano-iteracoes.md](docs/06-plano-iteracoes.md).
 - `hipotese/<nome>`: experimento de arquitetura (hardkey, servidor de auth, DSP no servidor).
   O red ataca a branch; só sobe para `main` o que se provar.
 - `fix/<folha>`: correção de um ataque específico pelo blue team.
+- `ataque/<folha>`: teste de regressão de um ataque, aberto pelo red team (passo a passo em
+  [docs/07-guia-red-team.md](docs/07-guia-red-team.md)).
 
 ## Ciclo de um ataque
 
