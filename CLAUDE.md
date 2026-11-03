@@ -71,6 +71,7 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   abuso, árvores de ataque, rastreabilidade, processo.
 - `docs/06-plano-iteracoes.md`: calendário de novembro (v0 a v4), ritual do ciclo, build
   pronta, medição de custo, regras de engajamento.
+- `docs/07-guia-red-team.md`: passo a passo do red team e bloco de contexto para a IA deles.
 - `docs/metricas/custo-ataques.csv` e `docs/iteracoes/`: registro de custo e notas por build.
 - `CONTRIBUTING.md`: fluxo red/blue, branches, como um ataque vira teste.
 - `.github/workflows/security.yml`: a esteira. Os jobs que dependem de
@@ -85,7 +86,7 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 - Escrever docs em PT-BR. Evitar travessões (em dash) nos textos.
 - Testes de regressão nomeados `T-<folha>` espelhando a árvore (ex. `T-F1.2`).
 - Branches: `main` (builds validadas), `hipotese/<nome>` (experimentos de arquitetura),
-  `fix/<folha>` (correções).
+  `fix/<folha>` (correções do blue), `ataque/<folha>` (testes de ataque do red).
 - Toda defesa que entra na `main` vem com o teste de regressão correspondente e atualiza a
   matriz em `docs/04-controls-traceability.md`.
 
