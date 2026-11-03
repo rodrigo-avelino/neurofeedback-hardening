@@ -24,6 +24,7 @@ custo de ataque é medido. Complementa o processo descrito em `05-tds-process.md
 | v3 | anti-debug, anti-hook e ofuscação (renomeação, constantes, fluxo de controle) | G2, H1.2, H2.2 |
 | v4 | Native AOT com metadados enxutos | H1.1, H2.1 e os ataques em IL de G1 e G2 |
 | `hipotese/dsp-servidor` | DSP no servidor | árvore 2 inteira; acorda o ramo G4 |
+| `hipotese/ativacao-online` | servidor de ativação: licença anual, limite de ativações por cliente, troca de máquina pelo próprio cliente | nenhuma folha nova; resolve a reativação manual da v1 e acorda o ramo G4 |
 
 A ordem segue a lógica de custo do ASPIRE: cada build fecha o caminho mais barato que sobrou
 na anterior. Na v0, copiar ou editar a licença custa minutos e nenhuma habilidade. Com a
@@ -31,6 +32,13 @@ licença assinada (v1), o caminho mais barato vira patchear o `if`, o que demons
 que a raiz do problema é a integridade do binário. A v2 empurra o atacante para a execução
 (G2), a v3 encarece G2 e a leitura do algoritmo, e a v4 tira o IL de cena. A ordem é hipótese,
 não contrato: se o red achar um caminho mais barato, a build seguinte muda de alvo.
+
+**Hipótese da ativação online.** A v1 amarra a licença à máquina: trocar de máquina exige pedir
+licença nova ao fornecedor, e a licença antiga continua valendo até vencer. Um servidor de
+ativação simples (licença anual, limite de ativações por cliente, troca de máquina feita pelo
+próprio cliente) resolve esses dois pontos e pode tirar a chave privada da esteira e da máquina
+do blue. Em troca, exige internet na ativação e acorda o ramo G4 (emular o servidor, replay,
+forçar o modo offline). Não muda G1: o patch no binário continua valendo.
 
 **Sem datas fixas por build.** Um ciclo fecha quando duas coisas aconteceram: o red passou por
 todas as folhas ativas da build (sucesso, falha ou timebox, tudo no CSV) e o blue mergeou as
