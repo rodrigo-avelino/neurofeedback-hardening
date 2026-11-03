@@ -1,0 +1,21 @@
+{
+  "taxaAmostragem": 250.0,
+  "tamanhoJanela": 500,
+  "passo": 125,
+  "tamanhoFft": 512,
+  "frequenciaRede": 60.0,
+  "qualidadeNotch": 30.0,
+  "corteAltaPassagem": 1.0,
+  "bandaTeta": { "min": 4.0, "max": 8.0 },
+  "bandaAlfa": { "min": 8.0, "max": 12.0 },
+  "bandaSmr": { "min": 12.0, "max": 15.0 },
+  "bandaBeta": { "min": 15.0, "max": 30.0 },
+  "pesoTeta": 1.0,
+  "pesoAlfa": 0.8,
+  "pesoSmr": 0.6,
+  "pesoBeta": 1.2,
+  "suavizacao": 0.2,
+  "fatorLimiar": 1.05,
+  "tamanhoHistorico": 60,
+  "historicoMinimo": 8
+}
