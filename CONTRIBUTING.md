@@ -1,6 +1,6 @@
 # Fluxo de trabalho (red/blue, purple teaming)
 
-O calendário, o ritual de cada ciclo, a medição de custo e as regras de engajamento do red
+A sequência de builds, o ritual de cada ciclo, a medição de custo e as regras de engajamento do red
 team estão em [docs/06-plano-iteracoes.md](docs/06-plano-iteracoes.md).
 
 ## Branches

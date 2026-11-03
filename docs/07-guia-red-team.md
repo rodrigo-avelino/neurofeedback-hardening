@@ -70,11 +70,12 @@ custo e impacto. Binário adulterado não vai anexado: passos, script e hash bas
 5. Abrir o PR para a `main`. A esteira roda o teste contra o zip da própria build, e o merge só
    entra com ela verde.
 
-### 6. Sync purple
+### 6. Reunião red/blue
 
-No meio do ciclo (D3 no ritual do plano), 30 minutos: o red mostra o que funcionou, o que não
-funcionou e quanto custou; os dois times combinam o estado de cada folha; o blue fecha o escopo
-da build seguinte.
+No meio do ciclo, 30 minutos, por chamada ou por escrito: o red mostra o que funcionou, o que
+não funcionou e quanto custou; os dois times combinam o estado de cada folha; o blue fecha o
+escopo da build seguinte. É o momento "purple" do purple teaming. Não há data fixa por build: o
+ciclo fecha quando vocês passaram por todas as folhas ativas e o blue entregou a próxima.
 
 ### 7. Caixa branca (opcional)
 
@@ -86,7 +87,7 @@ Depois de registrar a caixa preta, pode ler `app/` e tentar de novo. A linha do 
 O alvo é o processamento de sinal dentro do binário (um stub com algoritmo de verdade):
 extrair os parâmetros (H1.2), localizar o módulo (H2.1) e entender a lógica (H2.2). A meta é
 reimplementar o processamento a ponto de reproduzir a saída. A verificação por oráculo, com
-uma entrada que vocês não viram, fica combinada no primeiro sync. Registrem o tempo de cada
+uma entrada que vocês não viram, fica combinada na primeira reunião red/blue. Registrem o tempo de cada
 etapa.
 
 ## O que não fazer

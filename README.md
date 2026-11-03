@@ -36,7 +36,7 @@ um teste de regressão que impede o retorno da falha.
 | [docs/03-attack-trees.md](docs/03-attack-trees.md) | Árvores de ataque das duas histórias |
 | [docs/04-controls-traceability.md](docs/04-controls-traceability.md) | Rastreabilidade: controle -> CWE -> CyBOK -> ASPIRE -> teste |
 | [docs/05-tds-process.md](docs/05-tds-process.md) | O ciclo de iterações, a suíte de testes e as métricas |
-| [docs/06-plano-iteracoes.md](docs/06-plano-iteracoes.md) | Calendário de novembro, ritual de cada ciclo, medição de custo e regras de engajamento |
+| [docs/06-plano-iteracoes.md](docs/06-plano-iteracoes.md) | Sequência de builds, ritual de cada ciclo, medição de custo e regras de engajamento |
 | [docs/07-guia-red-team.md](docs/07-guia-red-team.md) | Passo a passo do red team em cada ciclo e contexto para assistentes de IA |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Fluxo red/blue, estratégia de branches, como criar um teste de regressão |
 

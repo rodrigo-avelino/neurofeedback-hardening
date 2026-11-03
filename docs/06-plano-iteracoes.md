@@ -1,6 +1,6 @@
 # Plano das iterações (novembro de 2026)
 
-Como os ciclos red/blue rodam na prática: decisões de partida, calendário, ritual de cada
+Como os ciclos red/blue rodam na prática: decisões de partida, sequência de builds, ritual de cada
 ciclo, o que conta como build pronta, como um ataque vira teste sem travar a `main` e como o
 custo de ataque é medido. Complementa o processo descrito em `05-tds-process.md`.
 
@@ -14,16 +14,16 @@ custo de ataque é medido. Complementa o processo descrito em `05-tds-process.md
 | Linguagem dos testes | C# (xunit.v3) com dnlib | mesmo stack do app real; dnlib é a biblioteca de manipulação de assembly do dnSpy |
 | Modo do red team | caixa preta primeiro, caixa branca depois | o custo medido só vale para o MATE se o atacante não leu o código; a caixa branca vira uma segunda medição, registrada à parte |
 
-## Calendário
+## Sequência de builds
 
-| Build | Tag (alvo) | Controle principal | Folhas que tenta fechar |
-|---|---|---|---|
-| v0 | seg 09/11 | nenhum (baseline de propósito) | nenhuma; mede o ponto de partida |
-| v1 | sex 13/11 | licença assinada (ECDSA P-256, só a chave pública no cliente) + binding de hardware | G3 |
-| v2 | qui 19/11 | integridade do binário: manifesto de hashes assinado, checagens espalhadas, resposta atrasada | G1 |
-| v3 | qua 25/11 | anti-debug, anti-hook e ofuscação (renomeação, constantes, fluxo de controle) | G2, H1.2, H2.2 |
-| v4 | seg 30/11 | Native AOT com metadados enxutos | H1.1, H2.1 e os ataques em IL de G1 e G2 |
-| `hipotese/dsp-servidor` | se houver fôlego | DSP no servidor | árvore 2 inteira; acorda o ramo G4 |
+| Build | Controle principal | Folhas que tenta fechar |
+|---|---|---|
+| v0 | nenhum (baseline de propósito), entregue em 03/11 | nenhuma; mede o ponto de partida |
+| v1 | licença assinada (ECDSA P-256, só a chave pública no cliente) + binding de hardware | G3 |
+| v2 | integridade do binário: manifesto de hashes assinado, checagens espalhadas, resposta atrasada | G1 |
+| v3 | anti-debug, anti-hook e ofuscação (renomeação, constantes, fluxo de controle) | G2, H1.2, H2.2 |
+| v4 | Native AOT com metadados enxutos | H1.1, H2.1 e os ataques em IL de G1 e G2 |
+| `hipotese/dsp-servidor` | DSP no servidor | árvore 2 inteira; acorda o ramo G4 |
 
 A ordem segue a lógica de custo do ASPIRE: cada build fecha o caminho mais barato que sobrou
 na anterior. Na v0, copiar ou editar a licença custa minutos e nenhuma habilidade. Com a
@@ -32,18 +32,25 @@ que a raiz do problema é a integridade do binário. A v2 empurra o atacante par
 (G2), a v3 encarece G2 e a leitura do algoritmo, e a v4 tira o IL de cena. A ordem é hipótese,
 não contrato: se o red achar um caminho mais barato, a build seguinte muda de alvo.
 
-20/11 (sexta) é feriado, por isso a v2 sai na quinta. Se o calendário apertar, a v4 vira
-recomendação no relatório em vez de build, e a hipótese do servidor fica só argumentada.
+**Sem datas fixas por build.** Um ciclo fecha quando duas coisas aconteceram: o red passou por
+todas as folhas ativas da build (sucesso, falha ou timebox, tudo no CSV) e o blue mergeou as
+correções da build seguinte. A única data firme é o fim de novembro para os ciclos. Como a v0
+saiu adiantada, a folga vira ciclos a mais (v5 em diante, ou a `hipotese/dsp-servidor`) ou mais
+tempo de documentação, conforme o que os resultados pedirem.
 
-## Ritual de um ciclo (cerca de 5 dias)
+## Ritual de um ciclo
 
-| Quando | Quem | O quê |
+| Etapa | Quem | O quê |
 |---|---|---|
-| D1 | blue | cria a tag `vN`; a CI publica a release (zip win-x64 + SHA-256) |
-| D1 a D3 | red | ataca a `vN` em caixa preta, registra toda tentativa no CSV de custo, abre issue para cada ataque com sucesso e sobe o teste com a folha `aberta` |
-| D3 | todos | sync purple de 30 min: o red apresenta, os dois concordam o estado de cada folha, o blue fecha o escopo da `v(N+1)` |
-| D2 a D5 | blue | implementa o controle planejado e reage aos achados, em PRs `fix/<folha>` |
-| D5 | blue | merge, coluna da build na matriz, nota da iteração e tag `v(N+1)` |
+| Abertura | blue | cria a tag `vN`; a CI publica a release (zip win-x64 + SHA-256) |
+| Ataque | red | ataca a `vN` em caixa preta, registra toda tentativa no CSV de custo, abre issue para cada ataque com sucesso e sobe o teste com a folha `aberta` |
+| Meio do ciclo | todos | reunião red/blue de 30 min: o red mostra o que achou, os dois combinam o estado de cada folha, o blue fecha o escopo da `v(N+1)` |
+| Correções | blue | em paralelo ao ataque, implementa o controle planejado e reage aos achados, em PRs `fix/<folha>` |
+| Fechamento | blue | merge, coluna da build na matriz, nota da iteração e tag `v(N+1)` |
+
+A reunião red/blue é o momento "purple" do purple teaming: os dois times juntos olhando o mesmo
+resultado. Pode ser chamada de voz ou por escrito (uma issue ou uma thread); o que importa é
+sair dela com o estado de cada folha combinado entre os dois lados.
 
 ## Build pronta
 
@@ -155,7 +162,7 @@ pulados.
 - [ ] Ligar os alertas do Dependabot e o secret scanning com push protection, gratuitos em repo
       público.
 
-## Backlog fora do calendário
+## Backlog fora da sequência de builds
 
 - Atualizar o DFD de `01-threat-model.md`: o produto real é distribuído por instalador, sem
   auto-update, e tem um canal local (loopback) de integração com jogos, que deve entrar como
