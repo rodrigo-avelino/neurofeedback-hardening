@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="NeuroMock/NeuroMock.csproj" />
   <Project Path="NeuroMock.Core/NeuroMock.Core.csproj" />
+  <Project Path="NeuroMock.Fornecedor/NeuroMock.Fornecedor.csproj" />
   <Project Path="NeuroMock.Tests/NeuroMock.Tests.csproj" />
 </Solution>

@@ -12,9 +12,11 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 
-  <!-- Referencia só o Core, sem Avalonia: descoberta rápida e sem dependência nativa. -->
+  <!-- Referencia o Core e o lado do fornecedor (para emitir licenças nos testes), sem Avalonia:
+       descoberta rápida e sem dependência nativa. -->
   <ItemGroup>
     <ProjectReference Include="..\NeuroMock.Core\NeuroMock.Core.csproj" />
+    <ProjectReference Include="..\NeuroMock.Fornecedor\NeuroMock.Fornecedor.csproj" />
   </ItemGroup>
 
 </Project>
