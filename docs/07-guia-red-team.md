@@ -67,6 +67,10 @@ custo e impacto. Binário adulterado não vai anexado: passos, script e hash bas
    ./security-tests/run-all.ps1 -Artefato .\neuromock-v0-win-x64.zip
    ```
 
+   A partir da v1, o resumo local mostra o controle positivo como "parcial": ele precisa da
+   chave privada do fornecedor, que só o blue e a esteira têm. É o esperado; na esteira ele roda
+   completo.
+
 5. Abrir o PR para a `main`. A esteira roda o teste contra o zip da própria build, e o merge só
    entra com ela verde.
 

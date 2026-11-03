@@ -155,12 +155,17 @@ pulados.
 ## Configuração manual no GitHub
 
 - [x] Repo público.
-- [ ] Convidar o red team como colaborador.
-- [ ] Criar o label `ataque`, usado pelo template de issue.
-- [ ] Proteger a `main` com um ruleset: exigir PR, exigir os checks da esteira e bloquear force
+- [x] Convidar o red team como colaborador.
+- [x] Criar o label `ataque`, usado pelo template de issue.
+- [x] Proteger a `main` com um ruleset (e as tags `v*` com outro, que impede mover ou apagar): exigir PR, exigir os checks da esteira e bloquear force
       push. Os checks só aparecem para seleção depois da primeira execução da esteira.
-- [ ] Ligar os alertas do Dependabot e o secret scanning com push protection, gratuitos em repo
+- [x] Ligar os alertas do Dependabot e o secret scanning com push protection, gratuitos em repo
       público.
+- [ ] A partir da v1: secret `NEUROMOCK_CHAVE_PRIVADA` com a chave privada do fornecedor, para o
+      controle positivo emitir licença na esteira. Risco registrado: colaborador com escrita
+      consegue ler um secret por um PR que altere a esteira. Atacar a esteira está fora das regras
+      de engajamento; se o time quiser fechar esse caminho de verdade, o secret vai para um
+      environment com aprovação manual do blue.
 
 ## Backlog fora da sequência de builds
 

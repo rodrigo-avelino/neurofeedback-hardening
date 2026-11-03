@@ -53,6 +53,14 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 - Red team ataca em caixa preta primeiro; caixa branca é uma medição separada. Toda tentativa,
   inclusive as que falham, vai para `docs/metricas/custo-ataques.csv` (timebox de 2h por folha).
 - Launcher fora do escopo do mock: a release em zip é o canal de distribuição.
+- Licença v1 (03/11/2026, branch `feat/v1-licenca-assinada`): ECDSA P-256 sobre cliente,
+  validade e código da máquina; o cliente só tem a chave pública (`ChaveFornecedor.cs`). Código
+  da máquina = hash de um identificador do sistema. Sem licença, o app grava
+  `solicitacao-ativacao.json` com o código. Emissão em `app/NeuroMock.Fornecedor`, fora do
+  pacote. A chave privada fica em `~/.neuromock/` na máquina do blue e, na esteira, no secret
+  `NEUROMOCK_CHAVE_PRIVADA`; nunca no repo. O controle positivo emite a licença na hora para a
+  máquina do runner; sem a chave, fora da esteira, ele fica parcial. A v1 só entra na `main`
+  depois dos testes T-F3.x do red (regra de ouro).
 - Sem datas fixas por build (03/11/2026): o ciclo fecha quando o red passou por todas as folhas
   ativas e o blue mergeou as correções. A única data firme é o fim de novembro; a folga vira
   ciclos extras (v5 em diante, hipótese do servidor) ou documentação. A reunião de meio de ciclo
