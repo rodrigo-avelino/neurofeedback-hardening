@@ -53,6 +53,10 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 - Red team ataca em caixa preta primeiro; caixa branca é uma medição separada. Toda tentativa,
   inclusive as que falham, vai para `docs/metricas/custo-ataques.csv` (timebox de 2h por folha).
 - Launcher fora do escopo do mock: a release em zip é o canal de distribuição.
+- Sem datas fixas por build (03/11/2026): o ciclo fecha quando o red passou por todas as folhas
+  ativas e o blue mergeou as correções. A única data firme é o fim de novembro; a folga vira
+  ciclos extras (v5 em diante, hipótese do servidor) ou documentação. A reunião de meio de ciclo
+  entre os times se chama "reunião red/blue" nos docs.
 - Mock na mesma linha de versões do produto real (Avalonia 11.3, CommunityToolkit.Mvvm 8.4,
   xunit.v3 3.2), no patch mais recente de cada uma. Licença da v0 em `licenca.json` ao lado
   do executável; sem trial na v0, então F3.4 fica inativa.
@@ -69,8 +73,8 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 
 - `docs/00-ideacao.md` .. `05-tds-process.md`: ideação, threat model (STRIDE+MATE), casos de
   abuso, árvores de ataque, rastreabilidade, processo.
-- `docs/06-plano-iteracoes.md`: calendário de novembro (v0 a v4), ritual do ciclo, build
-  pronta, medição de custo, regras de engajamento.
+- `docs/06-plano-iteracoes.md`: sequência de builds (v0 a v4, sem datas fixas), ritual do
+  ciclo, build pronta, medição de custo, regras de engajamento.
 - `docs/07-guia-red-team.md`: passo a passo do red team e bloco de contexto para a IA deles.
 - `docs/metricas/custo-ataques.csv` e `docs/iteracoes/`: registro de custo e notas por build.
 - `CONTRIBUTING.md`: fluxo red/blue, branches, como um ataque vira teste.
