@@ -1,0 +1,60 @@
+name: Ataque (red team)
+description: Registrar um ataque bem-sucedido contra uma build
+title: "[F?.?] técnica, build vN"
+labels: [ "ataque" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Uma issue por ataque com sucesso. Registre também as tentativas que falharam em
+        `docs/metricas/custo-ataques.csv`: o custo é a métrica principal do trabalho.
+        Não anexe binário adulterado; passos, script e hash bastam.
+  - type: input
+    id: build
+    attributes:
+      label: Build atacada
+      description: Tag da release e SHA-256 do zip (do arquivo .sha256 da release).
+      placeholder: "v0, 3f2a9c..."
+    validations:
+      required: true
+  - type: input
+    id: folha
+    attributes:
+      label: Folha da árvore
+      description: Ver docs/03-attack-trees.md.
+      placeholder: "F1.2"
+    validations:
+      required: true
+  - type: dropdown
+    id: modo
+    attributes:
+      label: Modo
+      options:
+        - Caixa preta (só o artefato da release)
+        - Caixa branca (consultou o código em app/)
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      description: Detalhados o bastante para virarem o teste T-<folha>.
+    validations:
+      required: true
+  - type: textarea
+    id: evidencia
+    attributes:
+      label: Evidência
+      description: Prints, script, hash do binário adulterado.
+  - type: input
+    id: custo
+    attributes:
+      label: Custo do ataque
+      description: Tempo total gasto na folha, contando as tentativas que falharam, e ferramentas.
+      placeholder: "45 min, dnSpyEx"
+    validations:
+      required: true
+  - type: textarea
+    id: impacto
+    attributes:
+      label: Impacto

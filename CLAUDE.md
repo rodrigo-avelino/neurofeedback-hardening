@@ -16,8 +16,8 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 ## O software
 
 - App real: produto comercial da empresa (o nome fica fora deste repo, que é público),
-  Avalonia/.NET/MVVM, EEG BrainBit Flex 4 via XNeuroSDK, 100% local, instalado por launcher, sem
-  nenhum controle de segurança ("white canvas").
+  Avalonia/.NET 10/MVVM, EEG BrainBit Flex 4 via XNeuroSDK, 100% local, distribuído por
+  instalador sem auto-update, sem nenhum controle de segurança ("white canvas").
 - **Neste repo o app é um mock** (`app/`): mesma arquitetura e superfícies de ataque, mas com o
   núcleo de processamento de sinal substituído por um stub sem valor comercial. Isso preserva o
   que importa para o trabalho sem expor a propriedade intelectual da empresa. Não colocar o
@@ -38,10 +38,21 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   cenário MATE (é taxonomia de intrusão de rede); se o enunciado exigir, entra só como
   mapeamento lateral de Defense Evasion.
 - A hardkey de licença é do software legado; o app novo parte do zero.
-- Esteira no GitHub Actions em duas camadas: higiene (SAST/SCA/segredos) e regressão MATE
-  (reaplica ataques corrigidos). Branch protection barra merge com esteira vermelha.
-- Ambiente de ataque é a máquina pessoal do red team (fiel ao MATE); reprodutibilidade vem do
-  devcontainer, que é o mesmo ambiente da CI.
+- Repo público desde 02/11/2026: o nome do produto e da empresa reais não entram aqui (docs,
+  código, commits, PRs).
+- Esteira no GitHub Actions em duas camadas: higiene (SAST/SCA/segredos, em Linux) e regressão
+  MATE (em runner Windows, contra o zip da release). Em tag `v*` publica a release com SHA-256.
+  Branch protection barra merge com esteira vermelha.
+- Ambiente de ataque é a máquina pessoal do red team (fiel ao MATE). Reprodutibilidade vem de
+  versões fixadas (`global.json` para o SDK, `dotnet-tools.json` para as ferramentas), iguais no
+  devcontainer (Linux: higiene e análise) e na CI.
+- Testes de regressão em C# (xunit.v3) com dnlib. Cada folha tem estado declarado em
+  `security-tests/estado-folhas.json`; a esteira só falha em regressão ou em estado
+  desatualizado. Todo teste tem controle positivo e observa o app de fora, sem flag de teste no
+  binário.
+- Red team ataca em caixa preta primeiro; caixa branca é uma medição separada. Toda tentativa,
+  inclusive as que falham, vai para `docs/metricas/custo-ataques.csv` (timebox de 2h por folha).
+- Launcher fora do escopo do mock: a release em zip é o canal de distribuição.
 - Achado arquitetural: a única mitigação que derrota o MATE no roubo do algoritmo é mover o DSP
   para um servidor (o cliente deixa de conter o segredo). Local, ofuscação e .NET Native AOT são
   endurecimento parcial.
@@ -55,9 +66,16 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 
 - `docs/00-ideacao.md` .. `05-tds-process.md`: ideação, threat model (STRIDE+MATE), casos de
   abuso, árvores de ataque, rastreabilidade, processo.
+- `docs/06-plano-iteracoes.md`: calendário de novembro (v0 a v4), ritual do ciclo, build
+  pronta, medição de custo, regras de engajamento.
+- `docs/metricas/custo-ataques.csv` e `docs/iteracoes/`: registro de custo e notas por build.
 - `CONTRIBUTING.md`: fluxo red/blue, branches, como um ataque vira teste.
-- `.github/workflows/security.yml`: a esteira (jobs em TODO até o app ter csproj).
-- `.devcontainer/`, `security-tests/`, `app/`.
+- `.github/workflows/security.yml`: a esteira. Os jobs que dependem de
+  `app/NeuroMock/NeuroMock.csproj` ou de `security-tests/run-all.ps1` são pulados enquanto eles
+  não existem.
+- `.github/ISSUE_TEMPLATE/ataque.yml` e `.github/pull_request_template.md`: formatos de issue
+  de ataque e de PR.
+- `global.json`, `dotnet-tools.json`, `.devcontainer/`, `security-tests/`, `app/`.
 
 ## Convenções
 
@@ -70,7 +88,11 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 
 ## Próximos passos abertos
 
-- [ ] Esqueleto do app mock (Avalonia + verificação de licença ingênua = build 0).
-- [ ] Primeiros testes de regressão (`T-F1.2` patch no IL, `T-F3.1` reuso de licença).
-- [ ] Ligar os jobs da esteira ao `app/` e ao `security-tests/`.
-- [ ] Gerar o DFD e a árvore de ataque 2 como diagramas em `docs/assets/`.
+- [x] Plano das iterações, esteira em .NET 10 e matriz completa (02/11/2026).
+- [ ] Esqueleto do app mock `app/NeuroMock.slnx` (Avalonia + verificação de licença ingênua =
+  build v0), espelhando o produto real (ver `docs/06-plano-iteracoes.md`).
+- [ ] Harness de `security-tests/` (`run-all.ps1`, `estado-folhas.json`, controle positivo) e
+  os primeiros testes (`T-F1.2` patch no IL, `T-F3.1` reuso de licença).
+- [ ] Configuração manual no GitHub (colaboradores, label, ruleset da `main`): ver o plano.
+- [ ] Atualizar o DFD (instalador sem auto-update, canal local dos jogos) e gerar o DFD e a
+  árvore de ataque 2 como diagramas em `docs/assets/`.
