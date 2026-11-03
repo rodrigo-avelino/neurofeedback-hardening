@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Lógica pura (licença, processamento de sinal, sensor simulado, sessão), sem dependência
+       de Avalonia: testável em isolamento, como o Core do produto real. -->
+
+  <ItemGroup>
+    <EmbeddedResource Include="Processamento\parametros.json" LogicalName="NeuroMock.Core.parametros.json" />
+  </ItemGroup>
+
+</Project>

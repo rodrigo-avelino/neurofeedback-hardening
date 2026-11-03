@@ -33,7 +33,7 @@ tudo aberto) e o red team a confirma ao atacar a v0.
 | F3.1 | T-F3.1 | binding de licença ao hardware | v1 | CWE-1390 | AAA | renovabilidade | n/a | A | ? | ? | ? | ? |
 | F3.2 | T-F3.2 | validação assimétrica (só a chave pública no cliente) | v1 | CWE-321 | Cryptography; AAA | ocultação de dados | CRYPTO-2 | A | ? | ? | ? | ? |
 | F3.3 | T-F3.3 | licença assinada (ECDSA); cifrar não basta, a chave estaria no cliente | v1 | CWE-345 | Cryptography | ocultação de dados | CRYPTO-1 | A | ? | ? | ? | ? |
-| F3.4 | T-F3.4 | marcador de trial resistente a rollback | v1 | CWE-642 | AAA | renovabilidade | n/a | A | ? | ? | ? | ? |
+| F3.4 | T-F3.4 | marcador de trial resistente a rollback | se houver trial | CWE-642 | AAA | renovabilidade | n/a | - | - | - | - | - |
 | F4.x | T-F4.x | ativação online + atestação | hipótese | CWE-294 | Distributed Systems Security | atestação remota | n/a | - | - | - | - | - |
 | F5.x | T-F5.x | challenge-response com hardkey | hipótese | CWE-287 | Hardware Security; AAA | atestação remota | n/a | - | - | - | - | - |
 | H1.1 | T-H1.1 | ofuscação + .NET Native AOT | v4 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A | ? | ? | ? | ? |
@@ -50,6 +50,7 @@ Legendas:
   (licenciamento não é coberto por ele).
 - G4 e G5 só acordam se uma hipótese de arquitetura for adotada. O resultado da branch
   `hipotese/...` vai na nota da iteração.
+- F3.4 está inativa porque o mock não tem trial na v0. A folha acorda se o trial for adotado.
 
 ## Notas de mapeamento
 
