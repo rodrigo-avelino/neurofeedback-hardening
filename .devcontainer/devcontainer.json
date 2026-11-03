@@ -1,7 +1,11 @@
 {
   "name": "neurofeedback-hardening",
   "build": { "dockerfile": "Dockerfile" },
-  "features": {},
+  "postCreateCommand": "dotnet tool restore",
+  "containerEnv": {
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
