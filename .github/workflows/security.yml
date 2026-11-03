@@ -89,6 +89,19 @@ jobs:
           "Pacotes com vulnerabilidade conhecida: $(@($vulneraveis).Count)"
           if (@($vulneraveis).Count -gt 0) { exit 1 }
 
+  testes-funcionais:
+    name: Testes funcionais do app
+    needs: detectar
+    if: needs.detectar.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Testar
+        run: dotnet test "$APP_SOLUCAO" -c Release
+
   segredos:
     name: Segredos vazados (gitleaks)
     runs-on: ubuntu-latest
@@ -163,7 +176,7 @@ jobs:
 
   publicar-release:
     name: Publicar release da tag
-    needs: [ build-release, mate-regression, sast, dependencias, segredos ]
+    needs: [ build-release, mate-regression, sast, dependencias, testes-funcionais, segredos ]
     if: >-
       startsWith(github.ref, 'refs/tags/v') && !cancelled() && !failure()
       && needs.build-release.result == 'success'
