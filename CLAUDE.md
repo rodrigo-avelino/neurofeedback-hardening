@@ -95,7 +95,8 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 - [x] App mock v0 (`app/NeuroMock.slnx`: licença ingênua, stub de DSP, sensor simulado) e
   harness de `security-tests/` (`run-all.ps1`, `estado-folhas.json`, controle positivo)
   (03/11/2026).
-- [ ] Tag `v0` depois do merge (a esteira publica a release com o zip e o SHA-256).
+- [x] Tag `v0` publicada (03/11/2026): release com o zip e o SHA-256, nota em
+  `docs/iteracoes/v0.md`.
 - [ ] Primeiros testes de ataque pelo red team (`T-F1.2` patch no IL, `T-F3.1` reuso de
   licença), depois da tentativa em caixa preta. O blue não escreve teste de ataque, para não
   revelar o alvo.
