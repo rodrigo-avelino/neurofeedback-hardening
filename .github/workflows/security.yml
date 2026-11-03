@@ -1,0 +1,71 @@
+name: security
+
+# Esteira de seguranca em duas camadas (ver docs/05-tds-process.md).
+# Camada 1: higiene (SAST, dependencias, segredos).
+# Camada 2: regressao MATE (reaplica cada ataque ja corrigido).
+
+on:
+  push:
+    branches: [ main, "hipotese/**", "fix/**" ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # ---------- Camada 1: higiene ----------
+  sast:
+    name: SAST (CodeQL)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      # - run: dotnet build app --configuration Release
+      - uses: github/codeql-action/analyze@v3
+
+  dependencies:
+    name: Dependencias vulneraveis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      # Falha a build se houver pacote vulneravel conhecido.
+      # - run: dotnet list app package --vulnerable --include-transitive 2>&1 | tee vuln.txt
+      # - run: '! grep -q "has the following vulnerable" vuln.txt'
+      - run: echo "TODO: habilitar quando o app/ tiver csproj"
+
+  secrets:
+    name: Segredos vazados (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+
+  # ---------- Camada 2: regressao MATE ----------
+  mate-regression:
+    name: Regressao de ataques (MATE)
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/redteam-env:latest  # ver .devcontainer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      # Cada ataque ja corrigido vira um teste que DEVE falhar o ataque.
+      # Ex.: aplicar patch conhecido e exigir que o app recuse abrir.
+      # - run: ./security-tests/run-all.sh
+      - run: echo "TODO: apontar para security-tests/ quando os testes existirem"

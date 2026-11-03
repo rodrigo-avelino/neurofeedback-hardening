@@ -1,0 +1,22 @@
+# .NET / Avalonia
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Artefatos de ataque (nao versionar binarios adulterados, so os scripts)
+*.patched.dll
+*.dump
+security-tests/artifacts/
+
+# Segredos (nunca commitar)
+*.key
+*.pfx
+.env
+secrets/
+
+# SO / editores
+.DS_Store
+Thumbs.db
+.idea/

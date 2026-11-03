@@ -1,0 +1,13 @@
+{
+  "name": "neurofeedback-hardening",
+  "build": { "dockerfile": "Dockerfile" },
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp"
+      ]
+    }
+  },
+  "remoteUser": "vscode"
+}
