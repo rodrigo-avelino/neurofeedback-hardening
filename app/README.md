@@ -1,7 +1,7 @@
 # app/ - aplicacao figurada (mock)
 
 Este diretorio hospeda uma **aplicacao figurada** com a mesma arquitetura do produto real
-(Avalonia/.NET/MVVM, launcher, verificacao de licenca, leitura de SDK, armazenamento local de
+(Avalonia/.NET 10/MVVM, verificacao de licenca, leitura de SDK, armazenamento local de
 sessao), mas com o nucleo de processamento de sinal substituido por um **stub** sem valor
 comercial (por exemplo, um filtro generico ou gerador de ruido com a mesma assinatura de
 funcao do modulo real).
@@ -20,7 +20,10 @@ nao um `return input`, senao a conclusao nao transfere.
 
 ## Estado
 
-- [ ] Esqueleto Avalonia/.NET
+- [ ] Esqueleto Avalonia/.NET 10: `NeuroMock.slnx` com App, Core (sem Avalonia) e Tests (ver
+  `docs/06-plano-iteracoes.md`)
 - [ ] Verificacao de licenca (build 0: ingenua, de proposito)
 - [ ] Stub do nucleo de processamento
-- [ ] Launcher
+- [ ] Sensor simulado com sinal sintetico
+- Launcher: fora do escopo das iteracoes. Nenhuma folha depende dele, e a release em zip cumpre
+  o papel de canal de distribuicao.

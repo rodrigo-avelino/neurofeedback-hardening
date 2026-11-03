@@ -1,71 +1,183 @@
 name: security
 
-# Esteira de seguranca em duas camadas (ver docs/05-tds-process.md).
-# Camada 1: higiene (SAST, dependencias, segredos).
-# Camada 2: regressao MATE (reaplica cada ataque ja corrigido).
+# Esteira de seguranca em duas camadas (ver docs/05-tds-process.md e docs/06-plano-iteracoes.md).
+#   Camada 1, higiene (Linux): SAST, dependencias vulneraveis e segredos vazados.
+#   Camada 2, regressao MATE (Windows, a plataforma do alvo e do red team): gera o artefato
+#   win-x64 e reaplica contra ele cada ataque conhecido.
+# Em tag v*, publica a release que o red team ataca, com o SHA-256 do zip.
+#
+# Enquanto app/ ou security-tests/ nao existirem, os jobs que dependem deles sao pulados.
+# Job pulado por condicao conta como sucesso na protecao de branch.
 
 on:
   push:
-    branches: [ main, "hipotese/**", "fix/**" ]
+    branches: [ main, "hipotese/**" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ main ]
 
 permissions:
   contents: read
-  security-events: write
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  # Caminhos combinados em docs/06-plano-iteracoes.md.
+  APP_SOLUCAO: app/NeuroMock.slnx
+  APP_PROJETO: app/NeuroMock/NeuroMock.csproj
+  SUITE_MATE: security-tests/run-all.ps1
 
 jobs:
+  detectar:
+    name: Detectar app e suite
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.d.outputs.app }}
+      suite: ${{ steps.d.outputs.suite }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: d
+        run: |
+          if [ -f "$APP_PROJETO" ]; then echo "app=true" >> "$GITHUB_OUTPUT"; else echo "app=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -f "$SUITE_MATE" ]; then echo "suite=true" >> "$GITHUB_OUTPUT"; else echo "suite=false" >> "$GITHUB_OUTPUT"; fi
+
   # ---------- Camada 1: higiene ----------
   sast:
     name: SAST (CodeQL)
+    needs: detectar
+    if: needs.detectar.outputs.app == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v4
         with:
           languages: csharp
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-      # - run: dotnet build app --configuration Release
-      - uses: github/codeql-action/analyze@v3
+          build-mode: none
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v4
 
-  dependencies:
-    name: Dependencias vulneraveis
+  dependencias:
+    name: Dependencias vulneraveis (SCA)
+    needs: detectar
+    if: needs.detectar.outputs.app == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: "8.0.x"
-      # Falha a build se houver pacote vulneravel conhecido.
-      # - run: dotnet list app package --vulnerable --include-transitive 2>&1 | tee vuln.txt
-      # - run: '! grep -q "has the following vulnerable" vuln.txt'
-      - run: echo "TODO: habilitar quando o app/ tiver csproj"
+          global-json-file: global.json
+      - name: Restaurar pacotes
+        run: dotnet restore "$APP_SOLUCAO"
+      # Decide pelo JSON, nao pelo texto da saida, que pode mudar entre versoes do SDK.
+      - name: Falhar se houver pacote vulneravel conhecido
+        shell: pwsh
+        run: |
+          dotnet list $env:APP_SOLUCAO package --vulnerable --include-transitive
+          $json = dotnet list $env:APP_SOLUCAO package --vulnerable --include-transitive --format json | Out-String
+          if ($LASTEXITCODE -ne 0) { throw "dotnet list package falhou" }
+          $relatorio = $json | ConvertFrom-Json
+          $vulneraveis = @(foreach ($fw in $relatorio.projects.frameworks) { $fw.topLevelPackages; $fw.transitivePackages }) |
+            Where-Object { $_ -and $_.vulnerabilities }
+          "Pacotes com vulnerabilidade conhecida: $(@($vulneraveis).Count)"
+          if (@($vulneraveis).Count -gt 0) { exit 1 }
 
-  secrets:
+  segredos:
     name: Segredos vazados (gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@v3
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Mesma versao do devcontainer (.devcontainer/Dockerfile).
+          GITLEAKS_VERSION: "8.30.1"
+          GITLEAKS_ENABLE_COMMENTS: "false"
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
 
   # ---------- Camada 2: regressao MATE ----------
+  build-release:
+    name: Build da release (win-x64)
+    needs: detectar
+    if: needs.detectar.outputs.app == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      # O empacotamento do produto real (sem single-file, sem ReadyToRun, sem trimming, sem PDB)
+      # fica no csproj do app. Controles de build (ofuscacao, Native AOT) tambem entram por la,
+      # num PR, e nao por flag escondida aqui.
+      # Self-contained embute o runtime do SDK usado: o global.json (latestFeature) garante o
+      # SDK 10.0 mais recente, e a versao fica registrada no resumo da build.
+      - name: Publicar
+        shell: pwsh
+        run: |
+          "SDK: $(dotnet --version)" >> $env:GITHUB_STEP_SUMMARY
+          dotnet publish $env:APP_PROJETO -c Release -r win-x64 --self-contained true -o publicado
+      - name: Empacotar com SHA-256
+        shell: pwsh
+        run: |
+          $versao = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { "dev-$($env:GITHUB_SHA.Substring(0, 7))" }
+          $zip = "neuromock-$versao-win-x64.zip"
+          Compress-Archive -Path publicado/* -DestinationPath $zip
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $zip" | Out-File -Encoding ascii "$zip.sha256"
+          "Artefato: ``$zip``, SHA-256: ``$hash``" >> $env:GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-win-x64
+          path: neuromock-*-win-x64.zip*
+          if-no-files-found: error
+
   mate-regression:
     name: Regressao de ataques (MATE)
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository }}/redteam-env:latest  # ver .devcontainer
+    needs: [ detectar, build-release ]
+    if: needs.detectar.outputs.suite == 'true'
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: "8.0.x"
-      # Cada ataque ja corrigido vira um teste que DEVE falhar o ataque.
-      # Ex.: aplicar patch conhecido e exigir que o app recuse abrir.
-      # - run: ./security-tests/run-all.sh
-      - run: echo "TODO: apontar para security-tests/ quando os testes existirem"
+          global-json-file: global.json
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-win-x64
+          path: artefato
+      # A suite ataca o mesmo zip que o red team recebe e compara cada resultado com o estado
+      # declarado em security-tests/estado-folhas.json: falha em regressao ou em estado
+      # desatualizado (ver security-tests/README.md).
+      - name: Rodar a suite contra o artefato
+        shell: pwsh
+        run: ./security-tests/run-all.ps1 -Artefato (Get-ChildItem artefato/*.zip).FullName
+
+  publicar-release:
+    name: Publicar release da tag
+    needs: [ build-release, mate-regression, sast, dependencias, segredos ]
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') && !cancelled() && !failure()
+      && needs.build-release.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-win-x64
+      - name: Criar a release com o zip e o SHA-256
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "$GITHUB_REF_NAME" neuromock-*-win-x64.zip*
+          --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME"
+          --notes "Build $GITHUB_REF_NAME, commit $GITHUB_SHA. O red team ataca somente este zip; conferir o SHA-256 antes."

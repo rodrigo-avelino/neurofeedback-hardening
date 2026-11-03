@@ -36,13 +36,14 @@ um teste de regressão que impede o retorno da falha.
 | [docs/03-attack-trees.md](docs/03-attack-trees.md) | Árvores de ataque das duas histórias |
 | [docs/04-controls-traceability.md](docs/04-controls-traceability.md) | Rastreabilidade: controle -> CWE -> CyBOK -> ASPIRE -> teste |
 | [docs/05-tds-process.md](docs/05-tds-process.md) | O ciclo de iterações, a suíte de testes e as métricas |
+| [docs/06-plano-iteracoes.md](docs/06-plano-iteracoes.md) | Calendário de novembro, ritual de cada ciclo, medição de custo e regras de engajamento |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Fluxo red/blue, estratégia de branches, como criar um teste de regressão |
 
 ## Sobre o app neste repositório
 
 O código em [`app/`](app/) é uma **aplicação figurada** (mock), com a mesma arquitetura do
-produto real (Avalonia/.NET/MVVM, launcher, verificação de licença, leitura de SDK,
-armazenamento local), porém com o núcleo de processamento de sinal substituído por um stub
+produto real (Avalonia/.NET 10/MVVM, verificação de licença, leitura de SDK, armazenamento
+local), porém com o núcleo de processamento de sinal substituído por um stub
 sem valor comercial. Isso preserva as superfícies de ataque que importam para o trabalho sem
 expor propriedade intelectual. Ver [app/README.md](app/README.md).
 
