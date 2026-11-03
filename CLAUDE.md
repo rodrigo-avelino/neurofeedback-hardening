@@ -53,6 +53,9 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 - Red team ataca em caixa preta primeiro; caixa branca é uma medição separada. Toda tentativa,
   inclusive as que falham, vai para `docs/metricas/custo-ataques.csv` (timebox de 2h por folha).
 - Launcher fora do escopo do mock: a release em zip é o canal de distribuição.
+- Mock na mesma linha de versões do produto real (Avalonia 11.3, CommunityToolkit.Mvvm 8.4,
+  xunit.v3 3.2), no patch mais recente de cada uma. Licença da v0 em `licenca.json` ao lado
+  do executável; sem trial na v0, então F3.4 fica inativa.
 - Achado arquitetural: a única mitigação que derrota o MATE no roubo do algoritmo é mover o DSP
   para um servidor (o cliente deixa de conter o segredo). Local, ofuscação e .NET Native AOT são
   endurecimento parcial.
@@ -89,10 +92,13 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 ## Próximos passos abertos
 
 - [x] Plano das iterações, esteira em .NET 10 e matriz completa (02/11/2026).
-- [ ] Esqueleto do app mock `app/NeuroMock.slnx` (Avalonia + verificação de licença ingênua =
-  build v0), espelhando o produto real (ver `docs/06-plano-iteracoes.md`).
-- [ ] Harness de `security-tests/` (`run-all.ps1`, `estado-folhas.json`, controle positivo) e
-  os primeiros testes (`T-F1.2` patch no IL, `T-F3.1` reuso de licença).
+- [x] App mock v0 (`app/NeuroMock.slnx`: licença ingênua, stub de DSP, sensor simulado) e
+  harness de `security-tests/` (`run-all.ps1`, `estado-folhas.json`, controle positivo)
+  (03/11/2026).
+- [ ] Tag `v0` depois do merge (a esteira publica a release com o zip e o SHA-256).
+- [ ] Primeiros testes de ataque pelo red team (`T-F1.2` patch no IL, `T-F3.1` reuso de
+  licença), depois da tentativa em caixa preta. O blue não escreve teste de ataque, para não
+  revelar o alvo.
 - [ ] Configuração manual no GitHub (colaboradores, label, ruleset da `main`): ver o plano.
 - [ ] Atualizar o DFD (instalador sem auto-update, canal local dos jogos) e gerar o DFD e a
   árvore de ataque 2 como diagramas em `docs/assets/`.
