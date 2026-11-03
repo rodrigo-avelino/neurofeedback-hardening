@@ -161,11 +161,12 @@ pulados.
       push. Os checks só aparecem para seleção depois da primeira execução da esteira.
 - [x] Ligar os alertas do Dependabot e o secret scanning com push protection, gratuitos em repo
       público.
-- [ ] A partir da v1: secret `NEUROMOCK_CHAVE_PRIVADA` com a chave privada do fornecedor, para o
+- [x] A partir da v1: secret `NEUROMOCK_CHAVE_PRIVADA` com a chave privada do fornecedor, para o
       controle positivo emitir licença na esteira. Risco registrado: colaborador com escrita
       consegue ler um secret por um PR que altere a esteira. Atacar a esteira está fora das regras
-      de engajamento; se o time quiser fechar esse caminho de verdade, o secret vai para um
-      environment com aprovação manual do blue.
+      de engajamento. Decisão (03/11/2026): secret simples, proporcional a um trabalho acadêmico;
+      no produto real, a chave de emissão fica num environment com aprovação manual, ou fora da
+      esteira de vez.
 
 ## Backlog fora da sequência de builds
 
