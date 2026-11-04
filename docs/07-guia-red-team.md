@@ -31,7 +31,8 @@ Hash diferente: não ataque, avise o blue. O zip da release é o único alvo vá
 ### 2. Atacar em caixa preta
 
 - Só o zip e as ferramentas. Nada de abrir `app/` antes de registrar a tentativa em caixa preta.
-- Uma folha por vez, com timebox de 2h por folha por build.
+- Uma folha por vez, com timebox de 2h por folha por build. É um teto: folha que cai em minutos
+  não consome o resto.
 - Para F3.1 (licença copiada de outra máquina), a licença legítima "de outra clínica" é
   `security-tests/fixtures/licenca-valida.json`.
 - O app procura a licença no arquivo `licenca.json`, na pasta do executável.
@@ -76,10 +77,13 @@ custo e impacto. Binário adulterado não vai anexado: passos, script e hash bas
 
 ### 6. Reunião red/blue
 
-No meio do ciclo, 30 minutos, por chamada ou por escrito: o red mostra o que funcionou, o que
-não funcionou e quanto custou; os dois times combinam o estado de cada folha; o blue fecha o
-escopo da build seguinte. É o momento "purple" do purple teaming. Não há data fixa por build: o
-ciclo fecha quando vocês passaram por todas as folhas ativas e o blue entregou a próxima.
+Nos encontros presenciais de terça e quinta: vocês mostram o que funcionou, o que não funcionou
+e quanto custou; os testes de vocês entram na `main`; os dois times combinam o estado de cada
+folha; sai a build seguinte. É o momento "purple" do purple teaming.
+
+Cada encontro exige os testes das folhas que a build seguinte fecha. A tabela está em
+`06-plano-iteracoes.md`; o primeiro é qui 05/11, com T-F3.1, T-F3.2 e T-F3.3. F2.1 (debugger)
+e F2.3 (edição de memória) podem ser medidas na mão, sem teste automático.
 
 ### 7. Caixa branca (opcional)
 

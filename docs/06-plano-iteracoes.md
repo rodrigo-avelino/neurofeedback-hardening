@@ -1,6 +1,6 @@
 # Plano das iterações (novembro de 2026)
 
-Como os ciclos red/blue rodam na prática: decisões de partida, sequência de builds, ritual de cada
+Como os ciclos red/blue rodam na prática: decisões de partida, sequência de builds e calendário até a apresentação, ritual de cada
 ciclo, o que conta como build pronta, como um ataque vira teste sem travar a `main` e como o
 custo de ataque é medido. Complementa o processo descrito em `05-tds-process.md`.
 
@@ -16,15 +16,15 @@ custo de ataque é medido. Complementa o processo descrito em `05-tds-process.md
 
 ## Sequência de builds
 
-| Build | Controle principal | Folhas que tenta fechar |
-|---|---|---|
-| v0 | nenhum (baseline de propósito), entregue em 03/11 | nenhuma; mede o ponto de partida |
-| v1 | licença assinada (ECDSA P-256, só a chave pública no cliente) + binding de hardware | G3 |
-| v2 | integridade do binário: manifesto de hashes assinado, checagens espalhadas, resposta atrasada | G1 |
-| v3 | anti-debug, anti-hook e ofuscação (renomeação, constantes, fluxo de controle) | G2, H1.2, H2.2 |
-| v4 | Native AOT com metadados enxutos | H1.1, H2.1 e os ataques em IL de G1 e G2 |
-| `hipotese/dsp-servidor` | DSP no servidor | árvore 2 inteira; acorda o ramo G4 |
-| `hipotese/ativacao-online` | servidor de ativação: licença anual, limite de ativações por cliente, troca de máquina pelo próprio cliente | nenhuma folha nova; resolve a reativação manual da v1 e acorda o ramo G4 |
+| Build | Sai em | Controle principal | Folhas que tenta fechar |
+|---|---|---|---|
+| v0 | ter 03/11 (saiu) | nenhum (baseline de propósito) | nenhuma; mede o ponto de partida |
+| v1 | qui 05/11 | licença assinada (ECDSA P-256, só a chave pública no cliente) + binding de hardware | G3 |
+| v2 | ter 10/11 | integridade do binário: manifesto de hashes assinado, checagens espalhadas, resposta atrasada | G1 |
+| v3 | qui 12/11 | anti-debug, anti-hook e ofuscação (renomeação, constantes, fluxo de controle) | G2, H1.2, H2.2 |
+| v4 | ter 17/11 | Native AOT com metadados enxutos | H1.1, H2.1 e os ataques em IL de G1 e G2 |
+| `hipotese/dsp-servidor` | recomendação no relatório | DSP no servidor | árvore 2 inteira; acorda o ramo G4 |
+| `hipotese/ativacao-online` | recomendação no relatório | servidor de ativação: licença anual, limite de ativações por cliente, troca de máquina pelo próprio cliente | nenhuma folha nova; resolve a reativação manual da v1 e acorda o ramo G4 |
 
 A ordem segue a lógica de custo do ASPIRE: cada build fecha o caminho mais barato que sobrou
 na anterior. Na v0, copiar ou editar a licença custa minutos e nenhuma habilidade. Com a
@@ -38,27 +38,49 @@ licença nova ao fornecedor, e a licença antiga continua valendo até vencer. U
 ativação simples (licença anual, limite de ativações por cliente, troca de máquina feita pelo
 próprio cliente) resolve esses dois pontos e pode tirar a chave privada da esteira e da máquina
 do blue. Em troca, exige internet na ativação e acorda o ramo G4 (emular o servidor, replay,
-forçar o modo offline). Não muda G1: o patch no binário continua valendo.
+forçar o modo offline). Não muda G1: o patch no binário continua valendo. Com o prazo de 24/11,
+ela entra como recomendação no relatório, não como build.
 
-**Sem datas fixas por build.** Um ciclo fecha quando duas coisas aconteceram: o red passou por
-todas as folhas ativas da build (sucesso, falha ou timebox, tudo no CSV) e o blue mergeou as
-correções da build seguinte. A única data firme é o fim de novembro para os ciclos. Como a v0
-saiu adiantada, a folga vira ciclos a mais (v5 em diante, ou a `hipotese/dsp-servidor`) ou mais
-tempo de documentação, conforme o que os resultados pedirem.
+## Calendário até a apresentação (24/11)
+
+A apresentação foi antecipada para ter 24/11. O time se encontra presencialmente às terças e
+quintas, e cada encontro fecha um ciclo: a reunião red/blue consolida a build atual e lança a
+seguinte.
+
+| Encontro | Fecha | Lança | Testes do red que precisam estar na `main` |
+|---|---|---|---|
+| qui 05/11 | v0 | v1 | T-F3.1, T-F3.2, T-F3.3 (só mexem no `licenca.json`, sem patch no binário) |
+| ter 10/11 | v1 | v2 | T-F1.1, T-F1.2, T-F1.3 |
+| qui 12/11 | v2 | v3 | T-F2.x, T-H1.2, T-H2.2 |
+| ter 17/11 | v3 | v4 | T-H1.1, T-H2.1 |
+| qui 19/11 | v4 | nada | consolidação final; até 24/11 é documentação e ensaio |
+
+Regras para caber no calendário:
+
+- **O blue anda uma build à frente.** Quando o encontro começa, a build seguinte já está pronta
+  numa branch; o encontro só consolida.
+- **Sem teste, a folha não fecha.** Pela regra de ouro, a folha só vira `fechada` com o teste
+  dela na `main`. Se o red não conseguir escrever um teste a tempo, o blue pode escrevê-lo a
+  partir dos passos da issue, depois que a tentativa em caixa preta foi registrada: a regra de o
+  blue não escrever teste existe para não revelar o alvo antes do ataque.
+- **F2.1 e F2.3 podem ser medidas na mão.** Debugger e edição de memória são difíceis de
+  automatizar na esteira. O custo vai para o CSV e a matriz registra que a folha não tem
+  regressão automática.
+- **Fusível.** Se um ciclo atrasar, a v4 vira recomendação no relatório e o dia 19 não se move.
+  As hipóteses de servidor ficam como recomendação argumentada.
+- **Nota da iteração no próprio encontro**, para o dia 19 ser montagem, não escrita do zero.
 
 ## Ritual de um ciclo
 
 | Etapa | Quem | O quê |
 |---|---|---|
-| Abertura | blue | cria a tag `vN`; a CI publica a release (zip win-x64 + SHA-256) |
-| Ataque | red | ataca a `vN` em caixa preta, registra toda tentativa no CSV de custo, abre issue para cada ataque com sucesso e sobe o teste com a folha `aberta` |
-| Meio do ciclo | todos | reunião red/blue de 30 min: o red mostra o que achou, os dois combinam o estado de cada folha, o blue fecha o escopo da `v(N+1)` |
-| Correções | blue | em paralelo ao ataque, implementa o controle planejado e reage aos achados, em PRs `fix/<folha>` |
-| Fechamento | blue | merge, coluna da build na matriz, nota da iteração e tag `v(N+1)` |
+| Entre encontros | red | ataca a build atual em caixa preta, registra toda tentativa no CSV de custo, abre issue para cada ataque com sucesso e escreve o teste com a folha `aberta` |
+| Entre encontros | blue | prepara a build seguinte numa branch: o controle planejado e a reação aos achados, em PRs `fix/<folha>` |
+| No encontro | todos | reunião red/blue: o red mostra o que achou e quanto custou; os testes do red entram na `main`; no PR da build seguinte, as folhas que ela fecha viram `fechada`; merge, coluna da build na matriz, nota da iteração e tag `v(N+1)` |
 
 A reunião red/blue é o momento "purple" do purple teaming: os dois times juntos olhando o mesmo
-resultado. Pode ser chamada de voz ou por escrito (uma issue ou uma thread); o que importa é
-sair dela com o estado de cada folha combinado entre os dois lados.
+resultado. Se alguém faltar a um encontro, vale por escrito (uma issue ou uma thread); o que
+importa é sair dela com o estado de cada folha combinado entre os dois lados.
 
 ## Build pronta
 
@@ -107,8 +129,11 @@ O custo é a métrica principal do trabalho (`00-ideacao.md`), então ele é reg
 
 - Toda tentativa entra em `docs/metricas/custo-ataques.csv`, inclusive as que falharam. Uma
   folha fechada sem registro de tentativa não prova nada.
-- Timebox de 2h por folha por build. Se estourar sem sucesso, a folha conta como fechada
-  naquela build, com custo "mais de 2h".
+- Timebox de 2h por folha por build. É um teto, não uma cota: folha que cai em minutos não
+  consome o resto, e o teto só pesa nas que resistem. Ele fica alto para preservar a medição:
+  com teto baixo, as builds finais viram todas "mais de 1h" e a curva de custo achata onde
+  deveria subir. Se estourar sem sucesso, a folha conta como fechada naquela build, com custo
+  "mais de 2h".
 - O modo é registrado: `preta` (só o artefato da release) ou `branca` (consultou `app/`).
 - Na árvore 2, o red vence quando entrega uma reimplementação que reproduz a saída do stub num
   sinal de entrada que ele não viu (oráculo). O tempo até chegar lá é o custo de H2.
