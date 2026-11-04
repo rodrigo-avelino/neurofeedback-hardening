@@ -120,8 +120,11 @@ O custo é a métrica principal do trabalho (`00-ideacao.md`), então ele é reg
 
 - Toda tentativa entra em `docs/metricas/custo-ataques.csv`, inclusive as que falharam. Uma
   folha fechada sem registro de tentativa não prova nada.
-- Timebox de 1h por folha por build, o que cabe no calendário até 24/11. Se estourar sem
-  sucesso, a folha conta como fechada naquela build, com custo "mais de 1h".
+- Timebox de 2h por folha por build. É um teto, não uma cota: folha que cai em minutos não
+  consome o resto, e o teto só pesa nas que resistem. Ele fica alto para preservar a medição:
+  com teto baixo, as builds finais viram todas "mais de 1h" e a curva de custo achata onde
+  deveria subir. Se estourar sem sucesso, a folha conta como fechada naquela build, com custo
+  "mais de 2h".
 - O modo é registrado: `preta` (só o artefato da release) ou `branca` (consultou `app/`).
 - Na árvore 2, o red vence quando entrega uma reimplementação que reproduz a saída do stub num
   sinal de entrada que ele não viu (oráculo). O tempo até chegar lá é o custo de H2.

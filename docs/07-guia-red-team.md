@@ -31,7 +31,8 @@ Hash diferente: não ataque, avise o blue. O zip da release é o único alvo vá
 ### 2. Atacar em caixa preta
 
 - Só o zip e as ferramentas. Nada de abrir `app/` antes de registrar a tentativa em caixa preta.
-- Uma folha por vez, com timebox de 1h por folha por build.
+- Uma folha por vez, com timebox de 2h por folha por build. É um teto: folha que cai em minutos
+  não consome o resto.
 - Para F3.1 (licença copiada de outra máquina), a licença legítima "de outra clínica" é
   `security-tests/fixtures/licenca-valida.json`.
 - O app procura a licença no arquivo `licenca.json`, na pasta do executável.
@@ -124,7 +125,7 @@ Regras que você deve seguir:
 - Caixa preta primeiro: trabalhe só com o zip da release e ferramentas de engenharia reversa
   (dnSpyEx, ILSpy, x64dbg, dnlib). NÃO abra nem leia nada em app/ (o código-fonte do alvo) até
   eu dizer que a tentativa em caixa preta foi registrada.
-- Timebox de 1h por folha por build. Ajude a registrar cada tentativa, inclusive as que
+- Timebox de 2h por folha por build. Ajude a registrar cada tentativa, inclusive as que
   falharam, em docs/metricas/custo-ataques.csv.
 - Ataque que funcionou vira issue pelo template "Ataque" e depois um teste T-<folha> em C#
   (xunit.v3 + dnlib) em security-tests/RegressaoMate/, numa branch ataque/<folha>, seguindo o

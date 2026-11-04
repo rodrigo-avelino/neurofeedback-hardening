@@ -51,7 +51,7 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   desatualizado. Todo teste tem controle positivo e observa o app de fora, sem flag de teste no
   binário.
 - Red team ataca em caixa preta primeiro; caixa branca é uma medição separada. Toda tentativa,
-  inclusive as que falham, vai para `docs/metricas/custo-ataques.csv` (timebox de 1h por folha).
+  inclusive as que falham, vai para `docs/metricas/custo-ataques.csv` (timebox de 2h por folha, teto e não cota).
 - Launcher fora do escopo do mock: a release em zip é o canal de distribuição.
 - Calendário até a apresentação de ter 24/11 (decidido em 03/11/2026): um ciclo por encontro
   presencial de terça e quinta. Qui 05/11 fecha a v0 e lança a v1; ter 10/11 a v2; qui 12/11 a
