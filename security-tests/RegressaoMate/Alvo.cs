@@ -84,6 +84,19 @@ public sealed class CopiaDoAlvo : IDisposable
     public string? LerCodigoDaMaquina() =>
         ArquivoLicenca.LerSolicitacao(Caminho(ArquivoLicenca.NomeSolicitacao))?.Maquina;
 
+    /// <summary>
+    /// Código desta máquina pelo fluxo de ativação do próprio alvo: roda sem licença e lê a
+    /// solicitação que ele grava, como faria um cliente. Sem solicitação, o teste é inconclusivo.
+    /// </summary>
+    public string ObterCodigoDaMaquina()
+    {
+        RemoverLicenca();
+        Executar();
+        return LerCodigoDaMaquina()
+            ?? throw new InvalidOperationException(
+                "INCONCLUSIVO: o alvo não gravou a solicitação de ativação com o código da máquina");
+    }
+
     public void RemoverLicenca() => File.Delete(Caminho(Alvo.ArquivoLicenca));
 
     /// <summary>

@@ -101,7 +101,8 @@ public sealed class T_F1_2
 Em ataque que nao mexe no binario (ramo G3), troque a alteracao por `copia.InstalarLicenca(json)`
 ou `copia.InstalarLicencaDeTeste()` (a licenca legitima de outra maquina). O codigo desta
 maquina sai da solicitacao de ativacao, depois de uma execucao sem licenca:
-`copia.LerCodigoDaMaquina()`. O que o atacante sabe do alvo (nomes, offsets) vem da
+`copia.LerCodigoDaMaquina()`, ou tudo de uma vez com `copia.ObterCodigoDaMaquina()`, que roda
+sem licenca e devolve o codigo. Os testes `T-F3.2-v1.cs` e `T-F3.3-v1.cs` sao exemplos. O que o atacante sabe do alvo (nomes, offsets) vem da
 tentativa em caixa preta e fica no teste, nao no harness.
 
 ## Metrica
