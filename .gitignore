@@ -10,8 +10,10 @@ obj/
 *.dump
 security-tests/artifacts/
 
-# Segredos (nunca commitar)
+# Segredos (nunca commitar). A chave privada do fornecedor fica fora do repo; *.pem e a
+# ultima barreira se alguem a copiar para ca.
 *.key
+*.pem
 *.pfx
 .env
 secrets/

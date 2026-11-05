@@ -63,8 +63,8 @@ internal static class Resultados
     public static void RegistrarFolha(string folha, string declarado, bool ataqueFuncionou, bool ok) =>
         Registrar(new { folha, declarado, ataque = ataqueFuncionou ? "funcionou" : "falhou", ok });
 
-    public static void RegistrarControle(string? motivoDaFalha) =>
-        Registrar(new { controle = "positivo", ok = motivoDaFalha is null, motivo = motivoDaFalha });
+    public static void RegistrarControle(string? motivoDaFalha, bool parcial) =>
+        Registrar(new { controle = "positivo", ok = motivoDaFalha is null, parcial, motivo = motivoDaFalha });
 
     private static void Registrar(object linha)
     {

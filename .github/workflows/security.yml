@@ -170,8 +170,12 @@ jobs:
       # A suite ataca o mesmo zip que o red team recebe e compara cada resultado com o estado
       # declarado em security-tests/estado-folhas.json: falha em regressao ou em estado
       # desatualizado (ver security-tests/README.md).
+      # A partir da v1, o controle positivo emite na hora a licenca para a maquina do runner, com
+      # a chave privada do fornecedor. Ela so existe como secret; nunca no repo nem no binario.
       - name: Rodar a suite contra o artefato
         shell: pwsh
+        env:
+          NFH_CHAVE_PRIVADA: ${{ secrets.NEUROMOCK_CHAVE_PRIVADA }}
         run: ./security-tests/run-all.ps1 -Artefato (Get-ChildItem artefato/*.zip).FullName
 
   publicar-release:

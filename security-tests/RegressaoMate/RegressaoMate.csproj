@@ -22,4 +22,10 @@
     <PackageReference Include="dnlib" Version="4.5.0" />
   </ItemGroup>
 
+  <!-- Só o lado do fornecedor, para o controle positivo emitir licença para a máquina que roda
+       a suíte. O alvo continua sendo o zip da release, nunca o código do app. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\app\NeuroMock.Fornecedor\NeuroMock.Fornecedor.csproj" />
+  </ItemGroup>
+
 </Project>

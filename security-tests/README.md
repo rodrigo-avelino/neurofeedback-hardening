@@ -24,9 +24,13 @@ Assim a esteira fica verde com folhas abertas (no MATE sempre sobra alguma) e so
 em regressao ou em estado desatualizado. O TDD acontece no PR `fix/<folha>`: mudar a folha para
 `fechada` deixa a esteira vermelha ate o controle funcionar (ver `docs/06-plano-iteracoes.md`).
 
-**Controle positivo.** Antes do ataque, o teste confirma que o app original abre com licenca
-valida e recusa sem licenca. Se isso falhar, o resultado e erro (inconclusivo), nunca
-`fechada`: um build quebrado que nem abre nao pode parecer seguro.
+**Controle positivo.** Antes do ataque, o teste confirma que o app original recusa sem licenca
+e abre o treino com uma licenca legitima para a maquina que roda a suite. Desde a v1 essa
+licenca e emitida na hora: o harness le o codigo da maquina na solicitacao de ativacao que o
+proprio app grava e assina com a chave privada do fornecedor (secret da esteira). Sem a chave,
+fora da esteira, o controle fica parcial: so a recusa sem licenca e conferida. Se o controle
+falhar, o resultado e erro (inconclusivo), nunca `fechada`: um build quebrado que nem abre nao
+pode parecer seguro.
 
 ## Convencao de nomes
 
@@ -39,7 +43,7 @@ security-tests/
   run-all.ps1             # ponto de entrada (CI e local)
   estado-folhas.json      # estado declarado de cada folha na build atual
   fixtures/
-    licenca-valida.json   # licenca legitima da "Clinica de Teste" (controle positivo, F3.1)
+    licenca-valida.json   # licenca legitima da "Clinica de Teste", emitida para OUTRA maquina (F3.1)
   RegressaoMate/          # projeto xunit.v3 + dnlib
     Alvo.cs               # extrai o zip, da uma copia por teste, roda e observa o app
     EstadoFolhas.cs       # compara o resultado do ataque com o estado declarado
@@ -56,11 +60,17 @@ So no Windows (o alvo e win-x64). Pegue o zip da release, ou gere um com `dotnet
 (ver `app/README.md`), e rode:
 
 ```powershell
-./security-tests/run-all.ps1 -Artefato .\neuromock-v0-win-x64.zip
+./security-tests/run-all.ps1 -Artefato .\neuromock-v1-win-x64.zip
 ```
 
-O controle positivo abre o app de verdade duas vezes: as janelas piscam na tela e o harness as
-fecha. A esteira roda o mesmo script num runner Windows, contra o zip da propria build, e
+Assim, sem a chave do fornecedor, o controle positivo sai parcial, e e o normal para o red
+team. O blue, que tem a chave, roda o controle completo:
+
+```powershell
+./security-tests/run-all.ps1 -Artefato .\neuromock-v1-win-x64.zip -ChavePrivada $HOME\.neuromock\fornecedor-p256.pem
+```
+
+O controle positivo abre o app de verdade: as janelas piscam na tela e o harness as fecha. A esteira roda o mesmo script num runner Windows, contra o zip da propria build, e
 escreve o resumo por folha na pagina da execucao.
 
 ## Como escrever um teste
@@ -89,7 +99,10 @@ public sealed class T_F1_2
 ```
 
 Em ataque que nao mexe no binario (ramo G3), troque a alteracao por `copia.InstalarLicenca(json)`
-ou `copia.InstalarLicencaDeTeste()`. O que o atacante sabe do alvo (nomes, offsets) vem da
+ou `copia.InstalarLicencaDeTeste()` (a licenca legitima de outra maquina). O codigo desta
+maquina sai da solicitacao de ativacao, depois de uma execucao sem licenca:
+`copia.LerCodigoDaMaquina()`, ou tudo de uma vez com `copia.ObterCodigoDaMaquina()`, que roda
+sem licenca e devolve o codigo. Os testes `T-F3.2-v1.cs` e `T-F3.3-v1.cs` sao exemplos. O que o atacante sabe do alvo (nomes, offsets) vem da
 tentativa em caixa preta e fica no teste, nao no harness.
 
 ## Metrica

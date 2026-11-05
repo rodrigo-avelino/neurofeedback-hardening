@@ -53,6 +53,14 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 - Red team ataca em caixa preta primeiro; caixa branca é uma medição separada. Toda tentativa,
   inclusive as que falham, vai para `docs/metricas/custo-ataques.csv` (timebox de 2h por folha, teto e não cota).
 - Launcher fora do escopo do mock: a release em zip é o canal de distribuição.
+- Licença v1 (03/11/2026, branch `feat/v1-licenca-assinada`): ECDSA P-256 sobre cliente,
+  validade e código da máquina; o cliente só tem a chave pública (`ChaveFornecedor.cs`). Código
+  da máquina = hash de um identificador do sistema. Sem licença, o app grava
+  `solicitacao-ativacao.json` com o código. Emissão em `app/NeuroMock.Fornecedor`, fora do
+  pacote. A chave privada fica em `~/.neuromock/` na máquina do blue e, na esteira, no secret
+  `NEUROMOCK_CHAVE_PRIVADA`; nunca no repo. O controle positivo emite a licença na hora para a
+  máquina do runner; sem a chave, fora da esteira, ele fica parcial. A v1 só entra na `main`
+  depois dos testes T-F3.x do red (regra de ouro).
 - Calendário até a apresentação de ter 24/11 (decidido em 03/11/2026): um ciclo por encontro
   presencial de terça e quinta. Qui 05/11 fecha a v0 e lança a v1; ter 10/11 a v2; qui 12/11 a
   v3; ter 17/11 a v4; qui 19/11 fecha tudo; depois só documentação e ensaio. O blue anda uma
@@ -105,9 +113,10 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   (03/11/2026).
 - [x] Tag `v0` publicada (03/11/2026): release com o zip e o SHA-256, nota em
   `docs/iteracoes/v0.md`.
-- [ ] Primeiros testes de ataque pelo red team (`T-F1.2` patch no IL, `T-F3.1` reuso de
-  licença), depois da tentativa em caixa preta. O blue não escreve teste de ataque, para não
-  revelar o alvo.
-- [ ] Configuração manual no GitHub (colaboradores, label, ruleset da `main`): ver o plano.
+- [x] Primeiros testes do red contra a v0: T-F3.1, T-F3.2 e T-F3.3 (05/11/2026). O blue somou
+  T-F3.2 e T-F3.3 na forma da v1, porque os do red só exercitam o formato da v0.
+- [ ] Tag `v1` depois do merge do PR #6, com release e nota em `docs/iteracoes/v1.md`.
+- [ ] Testes T-F1.x do red (patch no binário) para a v2, no encontro de ter 10/11.
+- [x] Configuração manual no GitHub (colaboradores, label, rulesets, secret): ver o plano.
 - [ ] Atualizar o DFD (instalador sem auto-update, canal local dos jogos) e gerar o DFD e a
   árvore de ataque 2 como diagramas em `docs/assets/`.

@@ -2,12 +2,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="NeuroMock.Views.JanelaAtivacao"
         Title="NeuroMock - Ativação"
-        Width="460" SizeToContent="Height" CanResize="False"
+        Width="480" SizeToContent="Height" CanResize="False"
         WindowStartupLocation="CenterScreen">
   <StackPanel Margin="24" Spacing="12">
     <TextBlock Text="Licença ausente, vencida ou inválida" FontSize="18" FontWeight="SemiBold" />
-    <TextBlock TextWrapping="Wrap"
-               Text="Coloque o arquivo licenca.json enviado pelo fornecedor na pasta do aplicativo e abra o programa de novo." />
+    <TextBlock TextWrapping="Wrap" Text="Para ativar, envie ao fornecedor o código desta máquina:" />
+    <TextBox x:Name="CodigoMaquina" IsReadOnly="True" FontFamily="Consolas,monospace" />
+    <TextBlock x:Name="Instrucoes" TextWrapping="Wrap" Opacity="0.8" />
     <Button Content="Fechar" HorizontalAlignment="Right" Click="Fechar" />
   </StackPanel>
 </Window>

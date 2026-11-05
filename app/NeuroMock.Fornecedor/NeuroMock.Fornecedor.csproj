@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Lado do fornecedor: gerar o par de chaves e emitir licença. Fica fora do pacote do
+       cliente (o app referencia só o Core); usam este projeto o emissor em ferramentas/, os
+       testes funcionais e o controle positivo da regressão MATE. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\NeuroMock.Core\NeuroMock.Core.csproj" />
+  </ItemGroup>
+
+</Project>

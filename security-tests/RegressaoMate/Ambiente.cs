@@ -20,6 +20,12 @@ internal static class Ambiente
 
     public static string? ArquivoResultados => Environment.GetEnvironmentVariable("NFH_RESULTADOS");
 
+    /// <summary>Chave privada do fornecedor em PEM: secret da esteira, ou -ChavePrivada no run-all.ps1 do blue.</summary>
+    public static string? ChavePrivadaFornecedor =>
+        Environment.GetEnvironmentVariable("NFH_CHAVE_PRIVADA") is { Length: > 0 } pem ? pem : null;
+
+    public static bool NaEsteira => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+
     private static string Obrigatoria(string nome) =>
         Environment.GetEnvironmentVariable(nome) is { Length: > 0 } valor
             ? valor

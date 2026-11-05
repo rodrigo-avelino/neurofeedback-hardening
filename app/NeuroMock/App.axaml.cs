@@ -19,12 +19,13 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            // Barreira de licença da build 0: um único if no cliente decide se o treino abre.
-            // É o alvo natural dos ramos G1 e G2 da árvore 1, e é assim de propósito.
+            // Barreira de licença: um único if no cliente decide se o treino abre. A v1 deixou a
+            // licença forte (assinada e presa à máquina), mas esse if continua sem proteção: é o
+            // alvo dos ramos G1 e G2 da árvore 1, que a v2 ataca.
             if (VerificadorLicenca.LicencaValida(AppContext.BaseDirectory))
                 desktop.MainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
             else
-                desktop.MainWindow = new JanelaAtivacao();
+                desktop.MainWindow = new JanelaAtivacao(AppContext.BaseDirectory);
         }
 
         base.OnFrameworkInitializationCompleted();
