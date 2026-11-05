@@ -35,6 +35,9 @@ Hash diferente: não ataque, avise o blue. O zip da release é o único alvo vá
   não consome o resto.
 - Para F3.1 (licença copiada de outra máquina), a licença legítima "de outra clínica" é
   `security-tests/fixtures/licenca-valida.json`.
+- Sucesso é usar o treino, não só vê-lo abrir. A partir da v2, depois de um ataque, deixem o
+  treino aberto por pelo menos um minuto antes de registrar o resultado. A regressão segue a
+  mesma regra: só conta como aberto o treino que continuou aberto durante a observação.
 - O app procura a licença no arquivo `licenca.json`, na pasta do executável.
 
 ### 3. Registrar toda tentativa

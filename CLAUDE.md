@@ -61,6 +61,16 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   `NEUROMOCK_CHAVE_PRIVADA`; nunca no repo. O controle positivo emite a licença na hora para a
   máquina do runner; sem a chave, fora da esteira, ele fica parcial. A v1 só entra na `main`
   depois dos testes T-F3.x do red (regra de ouro).
+- Integridade v2 (05/11/2026, branch `feat/v2-integridade`, contra o ramo G1): `manifesto.json`
+  com o SHA-256 de todos os arquivos do pacote, assinado com a mesma chave das licenças por
+  `app/ferramentas/assinar-pacote.cs`, no job `build-release` (o secret passa a chegar lá, só no
+  passo da assinatura). Duas guardas diferentes (pacote inteiro com a chave do Core; arquivos de
+  onde o código em execução foi carregado, com uma segunda cópia da chave, mascarada, no App) e
+  duas respostas atrasadas em outros pontos, com falha fechada: o treino fecha sozinho entre 4 e
+  14 s depois de abrir. Só em Release; nomes claros de propósito (renomear é a v3). O harness
+  observa o treino por 30 s: `JanelaPrincipalAbriu` passou a significar aberto e continuou
+  aberto. As folhas F1.x só viram `fechada` no PR da v2 depois que os T-F1.x do red chegarem
+  (ter 10/11). Desenho em `docs/06-plano-iteracoes.md`.
 - Calendário até a apresentação de ter 24/11 (decidido em 03/11/2026): um ciclo por encontro
   presencial de terça e quinta. Qui 05/11 fecha a v0 e lança a v1; ter 10/11 a v2; qui 12/11 a
   v3; ter 17/11 a v4; qui 19/11 fecha tudo; depois só documentação e ensaio. O blue anda uma
@@ -118,6 +128,8 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 - [x] Tag `v1` publicada (05/11/2026): release com o zip e o SHA-256, nota em
   `docs/iteracoes/v1.md`.
 - [ ] Testes T-F1.x do red (patch no binário) para a v2, no encontro de ter 10/11.
+- [ ] Build v2 (integridade) pronta na branch `feat/v2-integridade`, em PR rascunho: entra na
+  `main` com os T-F1.x do red e as folhas F1.x `fechada`, depois vem a tag `v2`.
 - [x] Configuração manual no GitHub (colaboradores, label, rulesets, secret): ver o plano.
 - [ ] Atualizar o DFD (instalador sem auto-update, canal local dos jogos) e gerar o DFD e a
   árvore de ataque 2 como diagramas em `docs/assets/`.

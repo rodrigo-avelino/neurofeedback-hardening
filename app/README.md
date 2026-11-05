@@ -25,12 +25,14 @@ nao um `return input`, senao a conclusao nao transfere.
 
 ```
 NeuroMock.slnx
-NeuroMock/            app Avalonia (WinExe): barreira de licenca, tela de treino, tela de ativacao
-NeuroMock.Core/       logica pura, sem Avalonia: Licenciamento, Processamento (stub de DSP),
-                      Sensor (sinal sintetico), Sessao (CSV local)
-NeuroMock.Fornecedor/ lado do fornecedor: par de chaves e emissao de licenca (fora do pacote)
-NeuroMock.Tests/      testes funcionais do Core e da emissao (xunit.v3)
-ferramentas/          emissor de licenca do fornecedor (file-based app)
+NeuroMock/            app Avalonia (WinExe): barreira de licenca, tela de treino, tela de ativacao,
+                      guardas e respostas de integridade (Integridade/, v2)
+NeuroMock.Core/       logica pura, sem Avalonia: Licenciamento, Integridade (manifesto, v2),
+                      Processamento (stub de DSP), Sensor (sinal sintetico), Sessao (CSV local)
+NeuroMock.Fornecedor/ lado do fornecedor: par de chaves, emissao de licenca e assinatura do
+                      pacote (fora do pacote)
+NeuroMock.Tests/      testes funcionais do Core, da emissao e do manifesto (xunit.v3)
+ferramentas/          emissor de licenca e assinador do pacote do fornecedor (file-based apps)
 ```
 
 O `Directory.Build.props` fixa o que vale para os tres projetos: .NET 10, auditoria de
@@ -72,11 +74,36 @@ dotnet run app/ferramentas/emitir-licenca.cs -- emitir ~/.neuromock/fornecedor-p
 O pacote que o red team ataca e o zip win-x64 que a esteira publica em cada tag `v*`:
 `dotnet publish app/NeuroMock/NeuroMock.csproj -c Release -r win-x64 --self-contained true`.
 
+### Integridade do pacote (v2)
+
+A partir da v2 o pacote leva um manifesto de integridade, `manifesto.json` na raiz: o SHA-256
+de cada arquivo publicado, assinado com a mesma chave do fornecedor. So a licenca e a
+solicitacao de ativacao ficam de fora, porque mudam na maquina do cliente. A esteira assina no
+job `build-release`, depois do publish e antes de empacotar.
+
+Em Release, o app confere o manifesto em execucao com duas guardas diferentes (o pacote inteiro,
+com a chave do Core; os arquivos de onde o codigo em execucao foi carregado, com uma segunda
+copia da chave que mora no App). Elas nao decidem nada: duas respostas atrasadas, em outros
+pontos do app, fecham o treino alguns segundos depois de ele abrir se o pacote foi adulterado,
+se nao tem manifesto assinado ou se faltar o resultado de uma guarda. O desenho completo esta
+em `docs/06-plano-iteracoes.md`.
+
+Em Debug as respostas nao existem (o codigo delas nem compila): o `dotnet run` de
+desenvolvimento nao tem manifesto. Um publish de Release sem assinatura fecha o treino sozinho,
+como faria um pacote adulterado. Para testar um publish local, assine a pasta com a chave do
+fornecedor:
+
+```bash
+dotnet run app/ferramentas/assinar-pacote.cs -- ~/.neuromock/fornecedor-p256.pem <pasta publicada>
+```
+
 ## Estado
 
 - [x] Esqueleto Avalonia/.NET 10: `NeuroMock.slnx` com App, Core (sem Avalonia) e Tests
 - [x] Verificacao de licenca (build 0: ingenua, de proposito)
 - [x] Licenca v1: assinada (ECDSA P-256) e presa a maquina, com fluxo de ativacao
+- [x] Integridade v2: manifesto assinado do pacote, duas guardas, duas respostas atrasadas e
+      segunda copia da chave publica
 - [x] Stub do nucleo de processamento (filtros, FFT, indice por bandas, limiar adaptativo)
 - [x] Sensor simulado com sinal sintetico
 - Trial: a v0 nao tem; a folha F3.4 fica inativa ate o trial ser adotado.
