@@ -13,33 +13,35 @@ build.
 - **Build alvo**: em que build o controle está planejado (`06-plano-iteracoes.md`).
 - **CWE / CyBOK / ASPIRE / MASVS**: fundamentação da escolha.
 - **v0..v4**: estado por build, igual ao declarado em `security-tests/estado-folhas.json` na
-  tag. `A` = aberta (o ataque tem sucesso), `F` = fechada (o controle resiste dentro do
-  timebox), `-` = n/a (ramo inativo), `?` = ainda não avaliada.
+  tag. `A` = aberta, medida (o ataque teve sucesso), `A*` = aberta por expectativa (nenhum
+  controle mira a folha e o red ainda não a mediu), `F` = fechada (o controle resiste ao ataque
+  conhecido, provado por teste de regressão), `-` = n/a (ramo inativo), `?` = build ainda não
+  saiu.
 
 A coluna da build é preenchida no fechamento do ciclo. O custo de cada tentativa fica em
-`docs/metricas/custo-ataques.csv`. A coluna v0 nasce preenchida pela expectativa (sem controle,
-tudo aberto) e o red team a confirma ao atacar a v0.
+`docs/metricas/custo-ataques.csv`. Na v0, o calendário levou o red direto às folhas que a v1
+fecha: só F3.1, F3.2 e F3.3 foram medidas; as outras ficaram `A*`.
 
 ## Matriz
 
 | Folha | Teste | Controle (blue) | Build alvo | CWE | CyBOK KA | ASPIRE | MASVS | v0 | v1 | v2 | v3 | v4 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| F1.1 | T-F1.1 | integridade do binário: manifesto de hashes assinado, checado em vários pontos | v2 | CWE-602 | Software Security; Secure SW Lifecycle | anti-tampering | RESILIENCE-2 | A | ? | ? | ? | ? |
-| F1.2 | T-F1.2 | idem (integridade do binário) | v2 | CWE-602 | Software Security | anti-tampering | RESILIENCE-2 | A | ? | ? | ? | ? |
-| F1.3 | T-F1.3 | idem | v2 | CWE-602 | Software Security | anti-tampering | RESILIENCE-2 | A | ? | ? | ? | ? |
-| F2.1 | T-F2.1 | anti-debug + checagem em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A | ? | ? | ? | ? |
-| F2.2 | T-F2.2 | detecção de hook + integridade em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A | ? | ? | ? | ? |
-| F2.3 | T-F2.3 | estado de licença sem flag única em memória; verificação redundante | v3 | CWE-642 | Software Security | anti-tampering | RESILIENCE-2 | A | ? | ? | ? | ? |
-| F3.1 | T-F3.1 | binding de licença ao hardware | v1 | CWE-1390 | AAA | renovabilidade | n/a | A | ? | ? | ? | ? |
-| F3.2 | T-F3.2 | validação assimétrica (só a chave pública no cliente) | v1 | CWE-321 | Cryptography; AAA | ocultação de dados | CRYPTO-2 | A | ? | ? | ? | ? |
-| F3.3 | T-F3.3 | licença assinada (ECDSA); cifrar não basta, a chave estaria no cliente | v1 | CWE-345 | Cryptography | ocultação de dados | CRYPTO-1 | A | ? | ? | ? | ? |
+| F1.1 | T-F1.1 | integridade do binário: manifesto de hashes assinado, checado em vários pontos | v2 | CWE-602 | Software Security; Secure SW Lifecycle | anti-tampering | RESILIENCE-2 | A* | A* | ? | ? | ? |
+| F1.2 | T-F1.2 | idem (integridade do binário) | v2 | CWE-602 | Software Security | anti-tampering | RESILIENCE-2 | A* | A* | ? | ? | ? |
+| F1.3 | T-F1.3 | idem | v2 | CWE-602 | Software Security | anti-tampering | RESILIENCE-2 | A* | A* | ? | ? | ? |
+| F2.1 | T-F2.1 | anti-debug + checagem em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A* | A* | ? | ? | ? |
+| F2.2 | T-F2.2 | detecção de hook + integridade em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A* | A* | ? | ? | ? |
+| F2.3 | T-F2.3 | estado de licença sem flag única em memória; verificação redundante | v3 | CWE-642 | Software Security | anti-tampering | RESILIENCE-2 | A* | A* | ? | ? | ? |
+| F3.1 | T-F3.1 | binding de licença ao hardware | v1 | CWE-1390 | AAA | renovabilidade | n/a | A | F | ? | ? | ? |
+| F3.2 | T-F3.2 | validação assimétrica (só a chave pública no cliente) | v1 | CWE-321 | Cryptography; AAA | ocultação de dados | CRYPTO-2 | A | F | ? | ? | ? |
+| F3.3 | T-F3.3 | licença assinada (ECDSA); cifrar não basta, a chave estaria no cliente | v1 | CWE-345 | Cryptography | ocultação de dados | CRYPTO-1 | A | F | ? | ? | ? |
 | F3.4 | T-F3.4 | marcador de trial resistente a rollback | se houver trial | CWE-642 | AAA | renovabilidade | n/a | - | - | - | - | - |
 | F4.x | T-F4.x | ativação online + atestação | hipótese | CWE-294 | Distributed Systems Security | atestação remota | n/a | - | - | - | - | - |
 | F5.x | T-F5.x | challenge-response com hardkey | hipótese | CWE-287 | Hardware Security; AAA | atestação remota | n/a | - | - | - | - | - |
-| H1.1 | T-H1.1 | ofuscação + .NET Native AOT | v4 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A | ? | ? | ? | ? |
-| H1.2 | T-H1.2 | parâmetros fora de arquivo em claro; ofuscação de constantes | v3 | CWE-312 | Software Security | ocultação de dados | RESILIENCE-3 | A | ? | ? | ? | ? |
-| H2.1 | T-H2.1 | renomeação (v3) + Native AOT sem metadados (v4) | v3, v4 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A | ? | ? | ? | ? |
-| H2.2 | T-H2.2 | ofuscação (control-flow, renaming) | v3 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A | ? | ? | ? | ? |
+| H1.1 | T-H1.1 | ofuscação + .NET Native AOT | v4 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A* | A* | ? | ? | ? |
+| H1.2 | T-H1.2 | parâmetros fora de arquivo em claro; ofuscação de constantes | v3 | CWE-312 | Software Security | ocultação de dados | RESILIENCE-3 | A* | A* | ? | ? | ? |
+| H2.1 | T-H2.1 | renomeação (v3) + Native AOT sem metadados (v4) | v3, v4 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A* | A* | ? | ? | ? |
+| H2.2 | T-H2.2 | ofuscação (control-flow, renaming) | v3 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A* | A* | ? | ? | ? |
 
 Legendas:
 
