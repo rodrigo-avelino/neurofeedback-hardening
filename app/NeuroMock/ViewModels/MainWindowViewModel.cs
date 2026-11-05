@@ -5,6 +5,10 @@ using CommunityToolkit.Mvvm.Input;
 using NeuroMock.Core.Processamento;
 using NeuroMock.Core.Sensor;
 using NeuroMock.Core.Sessao;
+#if !DEBUG
+using System.Threading.Tasks;
+using NeuroMock.Integridade;
+#endif
 
 namespace NeuroMock.ViewModels;
 
@@ -30,7 +34,36 @@ public partial class MainWindowViewModel : ObservableObject
         ResumoBandas = "";
         _relogio = new DispatcherTimer { Interval = Intervalo };
         _relogio.Tick += (_, _) => Atualizar();
+#if !DEBUG
+        _ = ResponderAdulteracaoAsync();
+#endif
     }
+
+#if !DEBUG
+    // Resposta atrasada 2 (v2). Outro ponto, outro sorteio e outro caminho que a resposta 1
+    // (MainWindow): fora da thread da interface, encerra o processo se faltar o selo de uma das
+    // guardas ou se alguma acusar adulteração. A conferência é repetida de propósito, sem função
+    // compartilhada com a resposta 1. Só existe em Release, como a outra.
+    private static async Task ResponderAdulteracaoAsync()
+    {
+        await Task.Delay(Random.Shared.Next(6_000, 14_000)).ConfigureAwait(false);
+        while (true)
+        {
+            var pacote = Guardas.Pacote;
+            var carregados = Guardas.Carregados;
+            if (pacote is { IsCompleted: false } || carregados is { IsCompleted: false })
+            {
+                await Task.Delay(1_000).ConfigureAwait(false);
+                continue;
+            }
+
+            if (pacote is not { IsCompletedSuccessfully: true, Result: true }
+                || carregados is not { IsCompletedSuccessfully: true, Result: true })
+                Environment.Exit(0);
+            return;
+        }
+    }
+#endif
 
     [ObservableProperty]
     public partial string Situacao { get; set; }
