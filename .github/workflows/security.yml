@@ -138,6 +138,26 @@ jobs:
         run: |
           "SDK: $(dotnet --version)" >> $env:GITHUB_STEP_SUMMARY
           dotnet publish $env:APP_PROJETO -c Release -r win-x64 --self-contained true -o publicado
+      # A partir da v2, o pacote leva o manifesto de integridade: o SHA-256 de cada arquivo
+      # publicado, assinado com a chave privada do fornecedor (a mesma das licencas). O app
+      # confere o manifesto em execucao e, se o pacote foi adulterado ou nao tem manifesto
+      # assinado, o treino fecha sozinho alguns segundos depois de abrir. O secret entra so
+      # neste passo, depois do publish (que roda codigo de terceiros), e o arquivo temporario
+      # da chave sai no fim.
+      - name: Assinar o manifesto de integridade
+        shell: pwsh
+        env:
+          NFH_CHAVE_PRIVADA: ${{ secrets.NEUROMOCK_CHAVE_PRIVADA }}
+        run: |
+          if (-not $env:NFH_CHAVE_PRIVADA) { throw 'sem o secret NEUROMOCK_CHAVE_PRIVADA: o pacote sairia sem manifesto assinado' }
+          $chave = Join-Path $env:RUNNER_TEMP 'fornecedor.pem'
+          Set-Content -Path $chave -Value $env:NFH_CHAVE_PRIVADA -NoNewline
+          try {
+            dotnet run app/ferramentas/assinar-pacote.cs -- $chave publicado
+            if ($LASTEXITCODE -ne 0) { throw 'a assinatura do pacote falhou' }
+          }
+          finally { Remove-Item -Force $chave }
+          "Manifesto: ``manifesto.json``, $(((Get-Content publicado/manifesto.json -Raw | ConvertFrom-Json).arquivos).Count) arquivos assinados" >> $env:GITHUB_STEP_SUMMARY
       - name: Empacotar com SHA-256
         shell: pwsh
         run: |
@@ -172,6 +192,8 @@ jobs:
       # desatualizado (ver security-tests/README.md).
       # A partir da v1, o controle positivo emite na hora a licenca para a maquina do runner, com
       # a chave privada do fornecedor. Ela so existe como secret; nunca no repo nem no binario.
+      # A partir da v2, o treino precisa continuar aberto durante a observacao: o controle
+      # positivo tambem pega falso positivo da verificacao de integridade.
       - name: Rodar a suite contra o artefato
         shell: pwsh
         env:
