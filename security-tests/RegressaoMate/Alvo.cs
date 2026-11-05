@@ -53,6 +53,13 @@ public sealed class CopiaDoAlvo : IDisposable
 {
     public static readonly TimeSpan LimitePadrao = TimeSpan.FromSeconds(45);
 
+    /// <summary>
+    /// Quanto tempo o treino tem de continuar aberto para contar como aberto. Desde a v2 o alvo
+    /// responde à adulteração com atraso: o treino abre e fecha sozinho alguns segundos depois.
+    /// A observação cobre com folga o atraso máximo da build (cerca de 15 s na v2).
+    /// </summary>
+    public static readonly TimeSpan ObservacaoTreino = TimeSpan.FromSeconds(30);
+
     internal CopiaDoAlvo(string pasta)
     {
         Pasta = pasta;
@@ -101,7 +108,8 @@ public sealed class CopiaDoAlvo : IDisposable
 
     /// <summary>
     /// Roda o executável e observa de fora, como o atacante: espera a primeira janela aparecer
-    /// (ou o processo terminar) e então encerra o processo.
+    /// (ou o processo terminar). Se ela é o treino, continua olhando durante
+    /// <see cref="ObservacaoTreino"/>, para ver se ele fica aberto. Depois encerra o processo.
     /// </summary>
     public ResultadoExecucao Executar(TimeSpan? limite = null)
     {
@@ -122,6 +130,8 @@ public sealed class CopiaDoAlvo : IDisposable
             Thread.Sleep(100);
         }
 
+        var treinoCaiuApos = titulo == Alvo.TituloJanelaPrincipal ? ObservarTreino(processo) : null;
+
         var encerrou = processo.HasExited;
         int? codigoSaida = encerrou ? processo.ExitCode : null;
         if (!encerrou)
@@ -130,7 +140,30 @@ public sealed class CopiaDoAlvo : IDisposable
             processo.WaitForExit(10_000);
         }
 
-        return new ResultadoExecucao(titulo, encerrou, codigoSaida, relogio.Elapsed);
+        return new ResultadoExecucao(titulo, encerrou, codigoSaida, relogio.Elapsed, treinoCaiuApos);
+    }
+
+    /// <summary>
+    /// Olha o treino aberto até o fim da observação. Devolve quanto tempo ele durou, se o processo
+    /// terminou ou a janela do treino sumiu por um segundo inteiro; <c>null</c> se ficou aberto.
+    /// </summary>
+    private static TimeSpan? ObservarTreino(Process processo)
+    {
+        var relogio = Stopwatch.StartNew();
+        var leiturasSemTreino = 0;
+        while (relogio.Elapsed < ObservacaoTreino)
+        {
+            Thread.Sleep(250);
+            if (processo.HasExited)
+                return relogio.Elapsed;
+
+            processo.Refresh();
+            leiturasSemTreino = processo.MainWindowTitle == Alvo.TituloJanelaPrincipal ? 0 : leiturasSemTreino + 1;
+            if (leiturasSemTreino >= 4)
+                return relogio.Elapsed;
+        }
+
+        return null;
     }
 
     public void Dispose()
@@ -151,14 +184,25 @@ public sealed class CopiaDoAlvo : IDisposable
 }
 
 /// <summary>O que deu para observar de fora numa execução do alvo.</summary>
-public sealed record ResultadoExecucao(string? Titulo, bool Encerrou, int? CodigoSaida, TimeSpan Duracao)
+/// <param name="TreinoCaiuApos">Quanto o treino durou, se abriu e fechou sozinho durante a observação.</param>
+public sealed record ResultadoExecucao(
+    string? Titulo, bool Encerrou, int? CodigoSaida, TimeSpan Duracao, TimeSpan? TreinoCaiuApos = null)
 {
-    /// <summary>O treino abriu: a barreira de licença foi vencida ou não existia.</summary>
-    public bool JanelaPrincipalAbriu => Titulo == Alvo.TituloJanelaPrincipal;
+    /// <summary>
+    /// O treino abriu e continuou aberto durante toda a observação: a barreira de licença foi
+    /// vencida ou não existia. Desde a v2, um treino que fecha sozinho logo depois de abrir (a
+    /// resposta atrasada à adulteração) não conta como aberto.
+    /// </summary>
+    public bool JanelaPrincipalAbriu => Titulo == Alvo.TituloJanelaPrincipal && TreinoCaiuApos is null;
 
-    /// <summary>Recusa observável: apareceu outra janela (a de ativação) ou o processo terminou sem abrir o treino.</summary>
+    /// <summary>
+    /// Recusa observável: apareceu outra janela (a de ativação), o treino fechou sozinho ou o
+    /// processo terminou sem abri-lo.
+    /// </summary>
     public bool Recusou => !JanelaPrincipalAbriu && (Titulo is not null || Encerrou);
 
     public override string ToString() =>
-        $"janela: {Titulo ?? "nenhuma"}, encerrou: {(Encerrou ? $"sim, código {CodigoSaida}" : "não")}, em {Duracao.TotalSeconds:F1} s";
+        $"janela: {Titulo ?? "nenhuma"}"
+        + (TreinoCaiuApos is { } caiu ? $", o treino fechou sozinho depois de {caiu.TotalSeconds:F1} s" : "")
+        + $", encerrou: {(Encerrou ? $"sim, código {CodigoSaida}" : "não")}, em {Duracao.TotalSeconds:F1} s";
 }

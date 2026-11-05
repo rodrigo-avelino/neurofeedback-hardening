@@ -10,7 +10,10 @@ Um teste e um procedimento repetivel com resultado passa/falha:
 - **executa** a tecnica de ataque da folha contra o zip da release (ex.: aplicar patch no IL,
   reusar licenca de outra maquina);
 - **observa de fora**, como o atacante: roda o executavel e verifica se a janela principal
-  abriu (ou se o segredo vazou). Nada de flag de teste dentro do binario;
+  abriu (ou se o segredo vazou). Nada de flag de teste dentro do binario. Desde a v2 o alvo
+  responde a adulteracao com atraso (o treino abre e fecha sozinho alguns segundos depois),
+  entao o harness observa o treino por 30 s (`CopiaDoAlvo.ObservacaoTreino`) e
+  `resultado.JanelaPrincipalAbriu` so e verdadeiro se ele continuou aberto ate o fim;
 - **compara** o resultado com o estado declarado da folha em `estado-folhas.json`.
 
 | Estado declarado | O ataque... | Resultado |
@@ -28,9 +31,11 @@ em regressao ou em estado desatualizado. O TDD acontece no PR `fix/<folha>`: mud
 e abre o treino com uma licenca legitima para a maquina que roda a suite. Desde a v1 essa
 licenca e emitida na hora: o harness le o codigo da maquina na solicitacao de ativacao que o
 proprio app grava e assina com a chave privada do fornecedor (secret da esteira). Sem a chave,
-fora da esteira, o controle fica parcial: so a recusa sem licenca e conferida. Se o controle
-falhar, o resultado e erro (inconclusivo), nunca `fechada`: um build quebrado que nem abre nao
-pode parecer seguro.
+fora da esteira, o controle fica parcial: so a recusa sem licenca e conferida. Desde a v2 o
+treino legitimo tambem precisa continuar aberto durante a observacao: o controle pega falso
+positivo da verificacao de integridade (por exemplo, um pacote publicado sem o manifesto
+assinado). Se o controle falhar, o resultado e erro (inconclusivo), nunca `fechada`: um build
+quebrado que nem abre nao pode parecer seguro.
 
 ## Convencao de nomes
 
@@ -57,7 +62,8 @@ security-tests/
 ## Como rodar
 
 So no Windows (o alvo e win-x64). Pegue o zip da release, ou gere um com `dotnet publish`
-(ver `app/README.md`), e rode:
+(ver `app/README.md`; desde a v2, assine a pasta publicada com `app/ferramentas/assinar-pacote.cs`
+antes de zipar, senao o treino fecha sozinho e o controle positivo acusa), e rode:
 
 ```powershell
 ./security-tests/run-all.ps1 -Artefato .\neuromock-v1-win-x64.zip

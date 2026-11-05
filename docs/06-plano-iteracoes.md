@@ -41,6 +41,44 @@ do blue. Em troca, exige internet na ativação e acorda o ramo G4 (emular o ser
 forçar o modo offline). Não muda G1: o patch no binário continua valendo. Com o prazo de 24/11,
 ela entra como recomendação no relatório, não como build.
 
+## Desenho da v2 (integridade do binário)
+
+Com a licença da v1, o caminho mais barato que sobra é o patch no binário (G1): mudar o
+resultado da verificação de licença, apagar o `if` que a consulta ou trocar a chave pública
+embutida pela de um atacante para assinar licenças próprias. A v2 não esconde o `if`: protege o
+binário que o contém.
+
+| Peça | Como funciona | O que encarece |
+|---|---|---|
+| Manifesto assinado | `manifesto.json` na raiz do pacote, com o SHA-256 de todos os arquivos publicados (assemblies, runtime, bibliotecas nativas, `deps.json`, `runtimeconfig.json` e o executável), assinado com a chave do fornecedor. A esteira assina no job `build-release`, depois do publish. Só ficam de fora a licença e a solicitação de ativação, que mudam na máquina do cliente. | Um byte alterado em qualquer arquivo invalida a assinatura; corrigir o hash no manifesto não adianta, e assinar de novo exige a chave privada. |
+| Duas guardas diferentes | A guarda 1 começa na inicialização e varre o pacote inteiro com o verificador e a chave do Core: remonta o manifesto com os hashes reais e confere a assinatura sobre ele. A guarda 2 nasce com a janela do treino e confere os arquivos de onde o código em execução foi de fato carregado (app, Core, criptografia, núcleo do runtime, executável, `deps.json` e `runtimeconfig.json`), com implementação e chave próprias do App. | Um mesmo patch não derruba as duas. Assembly carregado de fora da pasta também acusa. |
+| Resposta atrasada, com falha fechada | As guardas não decidem nada: cada uma deixa um selo. Duas respostas, em outros pontos (a janela do treino e o view model), em momentos sorteados (entre 4 e 14 s depois de o treino abrir) e por caminhos diferentes (uma fecha a janela, a outra encerra o processo fora da thread da interface), conferem os dois selos. Selo ausente conta como adulteração. | O treino abre e o patch parece ter funcionado; quando ele fecha, a pilha não leva à checagem. Tirar uma guarda não libera o app: é preciso achar as duas respostas. |
+| Chave pública protegida | Uma segunda cópia da chave mora no App, em outra forma (o ponto da curva, mascarado). Cada guarda confere o manifesto com uma das cópias. | Trocar a chave exige achar e trocar as duas, além de assinar um manifesto próprio e emitir uma licença própria. |
+
+Decisões que acompanham o desenho:
+
+- **Nomes claros de propósito.** O IL continua legível (`Guardas`, `ChaveEmbutida`). Renomear é
+  a v3, e juntar os dois controles na mesma build borraria a medição do custo de cada um.
+- **A resposta não fere o paciente.** Ela fecha o treino e nunca mexe no sinal ou no índice: num
+  app clínico, um falso positivo da integridade não pode virar feedback errado para o paciente.
+- **Só em Release.** Em Debug as respostas não existem, porque o app de desenvolvimento não tem
+  manifesto assinado. Não é flag: o código delas não está no IL de Debug, e o de Release não tem
+  caminho para desligá-las.
+- **Mesma chave das licenças.** Reusa a infraestrutura e o secret da v1. O cabeçalho do conteúdo
+  assinado é diferente nos dois casos, então uma assinatura de licença não serve de assinatura de
+  manifesto. No produto real, a chave que assina o pacote e a que emite licenças seriam
+  separadas.
+- **O harness observa o treino.** Com resposta atrasada, ver a janela do treino deixou de bastar:
+  a regressão observa o treino por 30 s, e só conta como aberto o que continuou aberto. Com isso
+  o controle positivo também pega falso positivo da integridade. Os T-F1.x do red, escritos
+  contra a v1 com `JanelaPrincipalAbriu`, valem sem mudança.
+- **Teto honesto.** Tudo continua no cliente e em IL legível: quem acha as duas respostas (ou as
+  duas guardas e as duas cópias da chave) vence. O ganho é o custo de achar, não uma barreira. A
+  v3 encarece achar (ofuscação, anti-debug), e a v4 tira o IL de cena.
+- **Versões antigas.** Sem auto-update, a v1 continua publicada e patchável, com o mesmo formato
+  de licença. Na medição, o red ataca só a build do ciclo; no produto real, isso pede
+  renovabilidade (versão no formato da licença, fim do suporte às versões antigas).
+
 ## Calendário até a apresentação (24/11)
 
 A apresentação foi antecipada para ter 24/11. O time se encontra presencialmente às terças e
@@ -120,8 +158,8 @@ licença válida e recusa sem licença. Se isso falhar, o resultado é inconclus
 `fechada`: um build quebrado que nem abre não pode parecer seguro.
 
 **Observação de fora.** O teste observa o app como o atacante observaria: roda o executável e
-verifica se a janela principal abriu. Nada de flag ou modo de teste dentro do binário, que
-seria superfície de ataque a mais.
+verifica se a janela principal abriu e, desde a v2, se continuou aberta durante a observação
+(30 s). Nada de flag ou modo de teste dentro do binário, que seria superfície de ataque a mais.
 
 ## Medição do custo de ataque
 
