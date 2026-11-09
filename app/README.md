@@ -32,7 +32,8 @@ NeuroMock.Core/       logica pura, sem Avalonia: Licenciamento, Integridade (man
 NeuroMock.Fornecedor/ lado do fornecedor: par de chaves, emissao de licenca e assinatura do
                       pacote (fora do pacote)
 NeuroMock.Tests/      testes funcionais do Core, da emissao e do manifesto (xunit.v3)
-ferramentas/          emissor de licenca e assinador do pacote do fornecedor (file-based apps)
+ferramentas/          emissor de licenca e assinador do pacote (file-based apps) e, na v3, o
+                      ofuscador do algoritmo (ofuscar-pacote.ps1)
 ```
 
 O `Directory.Build.props` fixa o que vale para os tres projetos: .NET 10, auditoria de
@@ -95,6 +96,36 @@ fornecedor:
 
 ```bash
 dotnet run app/ferramentas/assinar-pacote.cs -- ~/.neuromock/fornecedor-p256.pem <pasta publicada>
+```
+
+### Ofuscacao e controles de execucao (v3)
+
+A partir da v3 o algoritmo e ofuscado e o app ganha controles contra manipulacao em execucao
+(ramo G2 da arvore 1). O desenho completo esta em `docs/06-plano-iteracoes.md`, secao "Desenho
+da v3".
+
+- **Ofuscacao do algoritmo.** O `ofuscar-pacote.ps1` roda o Obfuscar (gratuito, fixado no
+  `dotnet-tools.json`) sobre o `NeuroMock.Core.dll` publicado: renomeia os membros internos dos
+  namespaces `Processamento` e `Sensor`, preserva a API publica (para o `NeuroMock.dll` nao
+  ofuscado continuar ligando) e deixa `Licenciamento`, `Integridade` e `Sessao` legiveis de
+  proposito, para os testes T-F1.x do red seguirem valendo pelo nome. O fluxo de controle fica
+  de fora (lacuna registrada, teto honesto); some de vez na v4 com o Native AOT.
+- **Parametros fora de arquivo em claro (H1.2).** O `parametros.json` saiu do pacote: os numeros
+  do pipeline sao decodificados em runtime de um bloco mascarado, sem recurso em claro nem
+  imediatos numericos no IL.
+- **Anti-debug (F2.1), anti-hook (F2.2) e estado de licenca redundante (F2.3).** Em Release, os
+  mesmos dois pontos de resposta atrasada da v2 passam a conferir tambem se ha depurador anexado,
+  se o metodo de licenca tem um detour (hook) e se a licenca ainda vale (reverificada do zero),
+  sem uma flag "licenciado" unica em memoria. Falham fechado, pelos mesmos caminhos da v2.
+
+A ofuscacao muda os bytes dos assemblies, entao entra depois do publish e antes da assinatura do
+manifesto. Para testar um publish local da v3, a ordem e publicar, ofuscar, assinar e zipar:
+
+```powershell
+dotnet publish app/NeuroMock/NeuroMock.csproj -c Release -r win-x64 --self-contained true -o publicado
+./app/ferramentas/ofuscar-pacote.ps1 -Pasta publicado
+dotnet run app/ferramentas/assinar-pacote.cs -- $HOME/.neuromock/fornecedor-p256.pem publicado
+Compress-Archive -Path publicado/* -DestinationPath neuromock-v3-win-x64.zip
 ```
 
 ## Estado
