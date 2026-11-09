@@ -2,7 +2,7 @@
 .SYNOPSIS
     Ofusca o NeuroMock.Core.dll de um pacote publicado (v3).
 .DESCRIPTION
-    Roda o Obfuscar (gratuito, fixado no dotnet-tools.json) sobre a pasta publicada: renomeia os
+    Roda o Obfuscar (gratuito, versao fixada neste script) sobre a pasta publicada: renomeia os
     membros internos do algoritmo (namespaces Processamento e Sensor) e preserva a API publica e as
     classes de Licenciamento, Integridade e Sessao. Entra depois do publish e antes de assinar o
     manifesto, porque a ofuscacao muda os bytes dos assemblies e o manifesto tem de cobrir o
@@ -17,7 +17,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$raizRepo = (Resolve-Path (Join-Path (Join-Path $PSScriptRoot '..') '..')).Path
+# Versao do Obfuscar fixada aqui (nao no manifesto de ferramentas): no runner da esteira o
+# `dotnet tool run` sobre um manifesto com mais de uma ferramenta recusava o comando.
+$versaoObfuscar = '2.2.50'
 $pastaAbs = (Resolve-Path $Pasta).Path
 $coreDll = Join-Path $pastaAbs 'NeuroMock.Core.dll'
 if (-not (Test-Path $coreDll)) { throw "NeuroMock.Core.dll nao encontrado em $pastaAbs" }
@@ -25,6 +27,8 @@ if (-not (Test-Path $coreDll)) { throw "NeuroMock.Core.dll nao encontrado em $pa
 # Obfuscar exige pasta de saida diferente da de entrada; copiamos a DLL ofuscada de volta depois.
 $saida = Join-Path $pastaAbs '_ofuscado'
 if (Test-Path $saida) { Remove-Item -Recurse -Force $saida }
+$ferramenta = Join-Path $pastaAbs '_obftool'
+if (Test-Path $ferramenta) { Remove-Item -Recurse -Force $ferramenta }
 
 # Barras normais no XML: funcionam no Windows e evitam escapar a barra invertida.
 $inPath = $pastaAbs -replace '\\', '/'
@@ -52,13 +56,16 @@ $config = Join-Path ([System.IO.Path]::GetTempPath()) ("obfuscar-" + [guid]::New
 "@ | Set-Content -Encoding utf8 $config
 
 try {
-    Push-Location $raizRepo
-    try {
-        dotnet tool restore | Out-Null
-        dotnet tool run obfuscar.console $config
-        if ($LASTEXITCODE -ne 0) { throw "obfuscar falhou (codigo $LASTEXITCODE)" }
-    }
-    finally { Pop-Location }
+    # Instala o Obfuscar numa pasta propria (versao fixada), em vez de resolver pelo manifesto de
+    # ferramentas: no runner da esteira o `dotnet tool run` sobre um manifesto com mais de uma
+    # ferramenta recusava "obfuscar.console". O install le o comando do proprio pacote.
+    dotnet tool install Obfuscar.GlobalTool --version $versaoObfuscar --tool-path $ferramenta
+    if ($LASTEXITCODE -ne 0) { throw "instalacao do Obfuscar $versaoObfuscar falhou (codigo $LASTEXITCODE)" }
+
+    $exe = Join-Path $ferramenta 'obfuscar.console.exe'
+    if (-not (Test-Path $exe)) { throw "obfuscar.console.exe nao encontrado em $ferramenta" }
+    & $exe $config
+    if ($LASTEXITCODE -ne 0) { throw "obfuscar falhou (codigo $LASTEXITCODE)" }
 
     $ofuscado = Join-Path $saida 'NeuroMock.Core.dll'
     if (-not (Test-Path $ofuscado)) { throw "Obfuscar nao gerou $ofuscado" }
@@ -67,5 +74,6 @@ try {
 }
 finally {
     if (Test-Path $saida) { Remove-Item -Recurse -Force $saida }
+    if (Test-Path $ferramenta) { Remove-Item -Recurse -Force $ferramenta }
     if (Test-Path $config) { Remove-Item -Force $config }
 }

@@ -130,7 +130,7 @@ jobs:
           global-json-file: global.json
       # O empacotamento do produto real (sem single-file, sem ReadyToRun, sem trimming, sem PDB)
       # fica no csproj do app. A ofuscacao da v3 entra como passo visivel a seguir, pela ferramenta
-      # versionada app/ferramentas/ofuscar-pacote.ps1 (Obfuscar fixado no dotnet-tools.json), nao
+      # versionada app/ferramentas/ofuscar-pacote.ps1 (Obfuscar com versao fixada no script), nao
       # como flag escondida aqui; o Native AOT da v4 entrara pelo csproj.
       # Self-contained embute o runtime do SDK usado: o global.json (latestFeature) garante o
       # SDK 10.0 mais recente, e a versao fica registrada no resumo da build.

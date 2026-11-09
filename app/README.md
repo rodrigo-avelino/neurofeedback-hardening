@@ -104,8 +104,8 @@ A partir da v3 o algoritmo e ofuscado e o app ganha controles contra manipulacao
 (ramo G2 da arvore 1). O desenho completo esta em `docs/06-plano-iteracoes.md`, secao "Desenho
 da v3".
 
-- **Ofuscacao do algoritmo.** O `ofuscar-pacote.ps1` roda o Obfuscar (gratuito, fixado no
-  `dotnet-tools.json`) sobre o `NeuroMock.Core.dll` publicado: renomeia os membros internos dos
+- **Ofuscacao do algoritmo.** O `ofuscar-pacote.ps1` roda o Obfuscar (gratuito, com a versao
+  fixada no proprio script) sobre o `NeuroMock.Core.dll` publicado: renomeia os membros internos dos
   namespaces `Processamento` e `Sensor`, preserva a API publica (para o `NeuroMock.dll` nao
   ofuscado continuar ligando) e deixa `Licenciamento`, `Integridade` e `Sessao` legiveis de
   proposito, para os testes T-F1.x do red seguirem valendo pelo nome. O fluxo de controle fica

@@ -73,7 +73,7 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   PR da v2 (#15), que vira F1.1 a F1.3 para `fechada` (09/11/2026). Desenho em
   `docs/06-plano-iteracoes.md`.
 - Ofuscação e execução v3 (09/11/2026, contra o ramo G2 e a árvore 2): o Obfuscar (gratuito,
-  fixado no `dotnet-tools.json` como o `ilspycmd`) renomeia só o algoritmo (namespaces
+  com a versão fixada no `app/ferramentas/ofuscar-pacote.ps1`) renomeia só o algoritmo (namespaces
   `Processamento` e `Sensor` do Core) por `app/ferramentas/ofuscar-pacote.ps1`, depois do publish
   e antes de assinar o manifesto (a ofuscação muda os bytes que o manifesto cobre), no job
   `build-release` e no teste local. `Licenciamento` e `Integridade` ficam legíveis de propósito,

@@ -104,8 +104,8 @@ Decisões que acompanham o desenho:
   fora da thread da interface). Falha fechada: selo ausente ou negativo conta como adulteração.
   Só em Release, e nunca mexe no sinal nem no índice, porque num app clínico um falso positivo
   da verificação não pode virar feedback errado para o paciente.
-- **Obfuscar, versão fixada.** A ofuscação é o Obfuscar (gratuito), fixado no
-  `dotnet-tools.json` como o `ilspycmd`. Ela muda os bytes dos assemblies, então entra depois do
+- **Obfuscar, versão fixada.** A ofuscação é o Obfuscar (gratuito), com a versão fixada no
+  `app/ferramentas/ofuscar-pacote.ps1`. Ela muda os bytes dos assemblies, então entra depois do
   publish e antes da assinatura do manifesto, na esteira (job `build-release`) e no teste local;
   o manifesto passa a cobrir os bytes ofuscados.
 - **Renomeação só do algoritmo.** O Obfuscar renomeia apenas `Processamento` e `Sensor`, onde a
