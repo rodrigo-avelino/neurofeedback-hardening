@@ -69,8 +69,9 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   duas respostas atrasadas em outros pontos, com falha fechada: o treino fecha sozinho entre 4 e
   14 s depois de abrir. Só em Release; nomes claros de propósito (renomear é a v3). O harness
   observa o treino por 30 s: `JanelaPrincipalAbriu` passou a significar aberto e continuou
-  aberto. As folhas F1.x só viram `fechada` no PR da v2 depois que os T-F1.x do red chegarem
-  (ter 10/11). Desenho em `docs/06-plano-iteracoes.md`.
+  aberto. Os T-F1.x do red (PRs #17, #19 e #21, medidos contra a v1 em 5 a 15 min) entraram no
+  PR da v2 (#15), que vira F1.1 a F1.3 para `fechada` (09/11/2026). Desenho em
+  `docs/06-plano-iteracoes.md`.
 - Calendário até a apresentação de ter 24/11 (decidido em 03/11/2026): um ciclo por encontro
   presencial de terça e quinta. Qui 05/11 fecha a v0 e lança a v1; ter 10/11 a v2; qui 12/11 a
   v3; ter 17/11 a v4; qui 19/11 fecha tudo; depois só documentação e ensaio. O blue anda uma
@@ -127,9 +128,10 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   T-F3.2 e T-F3.3 na forma da v1, porque os do red só exercitam o formato da v0.
 - [x] Tag `v1` publicada (05/11/2026): release com o zip e o SHA-256, nota em
   `docs/iteracoes/v1.md`.
-- [ ] Testes T-F1.x do red (patch no binário) para a v2, no encontro de ter 10/11.
-- [ ] Build v2 (integridade) pronta na branch `feat/v2-integridade`, em PR rascunho: entra na
-  `main` com os T-F1.x do red e as folhas F1.x `fechada`, depois vem a tag `v2`.
+- [x] Testes T-F1.x do red contra a v1 (07/11/2026): T-F1.1, T-F1.2 e T-F1.3, mesclados no PR
+  da v2.
+- [ ] Build v2 (integridade) no PR #15, com os T-F1.x do red e as folhas F1.x `fechada`: falta
+  o merge, a tag `v2` e a nota `docs/iteracoes/v2.md` com o SHA-256 da release.
 - [x] Configuração manual no GitHub (colaboradores, label, rulesets, secret): ver o plano.
 - [ ] Atualizar o DFD (instalador sem auto-update, canal local dos jogos) e gerar o DFD e a
   árvore de ataque 2 como diagramas em `docs/assets/`.
