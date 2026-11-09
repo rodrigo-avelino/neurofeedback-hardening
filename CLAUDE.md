@@ -130,8 +130,9 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   `docs/iteracoes/v1.md`.
 - [x] Testes T-F1.x do red contra a v1 (07/11/2026): T-F1.1, T-F1.2 e T-F1.3, mesclados no PR
   da v2.
-- [ ] Build v2 (integridade) no PR #15, com os T-F1.x do red e as folhas F1.x `fechada`: falta
-  o merge, a tag `v2` e a nota `docs/iteracoes/v2.md` com o SHA-256 da release.
+- [x] Tag `v2` publicada (09/11/2026): PR #15 com os T-F1.x do red e F1.x `fechada`, release
+  com o zip e o SHA-256, nota em `docs/iteracoes/v2.md`.
+- [ ] Testes T-F2.x, T-H1.2 e T-H2.2 do red contra a v2, para a v3 no encontro de qui 12/11.
 - [x] Configuração manual no GitHub (colaboradores, label, rulesets, secret): ver o plano.
 - [ ] Atualizar o DFD (instalador sem auto-update, canal local dos jogos) e gerar o DFD e a
   árvore de ataque 2 como diagramas em `docs/assets/`.
