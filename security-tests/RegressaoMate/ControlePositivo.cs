@@ -37,8 +37,10 @@ public static class ControlePositivo
         {
             if (Ambiente.ChavePrivadaFornecedor is { } chave)
             {
+                // Desde a v2, o treino tem de continuar aberto durante a observação: um pacote
+                // legítimo que fecha sozinho é falso positivo da verificação de integridade.
                 motivo = Observar(copia => copia.InstalarLicencaParaAMaquina(maquina!, chave), r => r.JanelaPrincipalAbriu,
-                    "com licença válida para esta máquina o treino não abriu");
+                    "com licença válida para esta máquina o treino não abriu ou não continuou aberto");
             }
             else if (Ambiente.NaEsteira)
             {
