@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using NeuroMock.Core.Integridade;
 using NeuroMock.Core.Licenciamento;
 using NeuroMock.Fornecedor;
@@ -217,6 +218,23 @@ public sealed class ManifestoTests : IDisposable
     {
         Escrever("extra.dll", "nao listado");
         Assert.True(Integro());
+    }
+
+    [Fact] // antivírus/OS segurando um arquivo recém-criado é trava transitória, não adulteração
+    public void TravaTransitoriaNumArquivoNaoQuebraAIntegridade()
+    {
+        // Trava exclusiva num arquivo do pacote, liberada depois de um instante por outra thread.
+        // A leitura de integridade tem de insistir (e não acusar adulteração) até a trava sair.
+        var trava = new FileStream(Caminho("NeuroMock.Core.dll"), FileMode.Open, FileAccess.Read, FileShare.None);
+        var liberador = new Thread(() =>
+        {
+            Thread.Sleep(100);
+            trava.Dispose();
+        });
+        liberador.Start();
+
+        Assert.True(Integro());
+        liberador.Join();
     }
 
     [Fact]

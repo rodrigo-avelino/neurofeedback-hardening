@@ -69,12 +69,11 @@ internal static class GuardasRuntime
     }
 
     // ---------- F2.2: anti-hook por integridade em runtime ----------
-    private static (nint codigo, byte[] prologo)? _baseHook;
 
-    /// <summary>Fotografa o início do código nativo do método de decisão da licença, já estabilizado.</summary>
-    public static void BaselineHook() => _baseHook = ResolverDecisao();
-
-    /// <summary>Hook se um framework de hook está carregado ou se o prólogo do método mudou.</summary>
+    /// <summary>
+    /// Hook se um framework de hook está carregado ou se o método de decisão da licença começa com
+    /// um salto incondicional (o detour que Harmony/MonoMod escrevem no início do método).
+    /// </summary>
     public static bool HookDetectado()
     {
         if (FrameworkDeHookCarregado())
@@ -82,16 +81,13 @@ internal static class GuardasRuntime
 
         try
         {
-            if (_baseHook is { } referencia && ResolverDecisao() is { } agora)
-                return agora.codigo != referencia.codigo
-                    || !agora.prologo.AsSpan().SequenceEqual(referencia.prologo);
+            return ResolverPrologo() is { } prologo && ComecaComSalto(prologo);
         }
         catch
         {
-            // Não conseguiu reler o código: conservador, não acusa.
+            // Não conseguiu ler o código: conservador, não acusa.
+            return false;
         }
-
-        return false;
     }
 
     private static bool FrameworkDeHookCarregado()
@@ -108,9 +104,17 @@ internal static class GuardasRuntime
         return false;
     }
 
-    // Segue a indireção FF 25 (jmp [rip+disp]) do precode até o código real e devolve o endereço e
-    // os primeiros bytes. Um detour que patcha o método, ou que redireciona o slot, muda um dos dois.
-    private static (nint codigo, byte[] prologo)? ResolverDecisao()
+    // O código legítimo começa com o prólogo da função (montagem da pilha), nunca com um salto
+    // incondicional: E9 (jmp rel32) ou FF 25 (jmp [rip]). Um detour reescreve o início do método
+    // com esse salto. Comparar com um baseline do endereço não serve, porque o runtime recompila o
+    // método (tier-0 -> tier-1) sozinho na janela da resposta: o endereço e os bytes mudam sem hook
+    // nenhum, o que dava falso positivo. O padrão do salto vale nos dois níveis do JIT.
+    private static bool ComecaComSalto(byte[] prologo) =>
+        prologo[0] == 0xE9 || (prologo[0] == 0xFF && prologo[1] == 0x25);
+
+    // Segue a indireção FF 25 (jmp [rip+disp]) do precode até o código real e devolve os primeiros
+    // bytes de onde o método de fato começa.
+    private static byte[]? ResolverPrologo()
     {
         var metodo = typeof(VerificadorLicenca).GetMethod(nameof(VerificadorLicenca.LicencaValida), [typeof(string)]);
         if (metodo is null)
@@ -127,7 +131,7 @@ internal static class GuardasRuntime
 
         var prologo = new byte[16];
         Marshal.Copy(codigo, prologo, 0, prologo.Length);
-        return (codigo, prologo);
+        return prologo;
     }
 
     [DllImport("kernel32.dll")]

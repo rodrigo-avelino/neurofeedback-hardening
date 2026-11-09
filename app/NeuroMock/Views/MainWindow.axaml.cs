@@ -17,11 +17,6 @@ public partial class MainWindow : Window
 
         // Integridade (v2): a segunda guarda nasce com a janela do treino.
         Guardas.ConferirCarregados(AppContext.BaseDirectory);
-
-        // Execução (v3): o treino só existe no caminho licenciado, depois da decisão. Aqui o método
-        // de licença já está compilado, então fotografamos o início do seu código nativo como
-        // referência para a detecção de hook (F2.2).
-        GuardasRuntime.BaselineHook();
     }
 
     protected override void OnOpened(EventArgs e)
@@ -62,20 +57,16 @@ public partial class MainWindow : Window
             }
 
             relogio.Stop();
-            var pacoteOk = pacote is { IsCompletedSuccessfully: true, Result: true };
-            var carregadosOk = carregados is { IsCompletedSuccessfully: true, Result: true };
-            var debugAgora = GuardasRuntime.DepuradorPresente();   // F2.1
-            var debugVisto = GuardasRuntime.DepuradorVisto;         // F2.1
-            var hook = GuardasRuntime.HookDetectado();              // F2.2
-            var estadoOk = EstadoLicenca.Consistente();             // F2.3
-            var licencaOk = VerificadorLicenca.LicencaValida(AppContext.BaseDirectory); // F2.3
-            var integro = pacoteOk && carregadosOk && !debugAgora && !debugVisto && !hook && estadoOk && licencaOk;
+            var integro =
+                pacote is { IsCompletedSuccessfully: true, Result: true }
+                && carregados is { IsCompletedSuccessfully: true, Result: true }
+                && !GuardasRuntime.DepuradorPresente()        // F2.1: depurador agora
+                && !GuardasRuntime.DepuradorVisto             // F2.1: depurador visto no começo
+                && !GuardasRuntime.HookDetectado()            // F2.2: hook/detour no método de licença
+                && EstadoLicenca.Consistente()                // F2.3: estado redundante intacto
+                && VerificadorLicenca.LicencaValida(AppContext.BaseDirectory); // F2.3: licença do zero
             if (!integro)
-            {
-                // DIAGNOSTICO TEMPORARIO (v3): descobrir qual guarda da falso positivo no runner.
-                try { Console.Error.WriteLine($"NM-DIAG r1 pacote={pacoteOk} carregados={carregadosOk} debugAgora={debugAgora} debugVisto={debugVisto} hook={hook} estado={estadoOk} licenca={licencaOk}"); } catch { }
                 Close();
-            }
         };
         relogio.Start();
     }
