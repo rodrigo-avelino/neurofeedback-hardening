@@ -7,6 +7,7 @@ using NeuroMock.Core.Sensor;
 using NeuroMock.Core.Sessao;
 #if !DEBUG
 using System.Threading.Tasks;
+using NeuroMock.Core.Licenciamento;
 using NeuroMock.Integridade;
 #endif
 
@@ -40,10 +41,11 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
 #if !DEBUG
-    // Resposta atrasada 2 (v2). Outro ponto, outro sorteio e outro caminho que a resposta 1
-    // (MainWindow): fora da thread da interface, encerra o processo se faltar o selo de uma das
-    // guardas ou se alguma acusar adulteração. A conferência é repetida de propósito, sem função
-    // compartilhada com a resposta 1. Só existe em Release, como a outra.
+    // Resposta atrasada 2 (v2, estendida na v3). Outro ponto, outro sorteio e outro caminho que a
+    // resposta 1 (MainWindow): fora da thread da interface, encerra o processo se algo acusar
+    // adulteração. Agrega os selos das guardas da v2 e os sinais de execução da v3 (depurador, hook
+    // e licença reverificada). A agregação é repetida de propósito, sem função compartilhada com a
+    // resposta 1. Só existe em Release, como a outra.
     private static async Task ResponderAdulteracaoAsync()
     {
         await Task.Delay(Random.Shared.Next(6_000, 14_000)).ConfigureAwait(false);
@@ -57,8 +59,15 @@ public partial class MainWindowViewModel : ObservableObject
                 continue;
             }
 
-            if (pacote is not { IsCompletedSuccessfully: true, Result: true }
-                || carregados is not { IsCompletedSuccessfully: true, Result: true })
+            var integro =
+                pacote is { IsCompletedSuccessfully: true, Result: true }
+                && carregados is { IsCompletedSuccessfully: true, Result: true }
+                && !GuardasRuntime.DepuradorPresente()        // F2.1: depurador agora
+                && !GuardasRuntime.DepuradorVisto             // F2.1: depurador visto no começo
+                && !GuardasRuntime.HookDetectado()            // F2.2: hook/detour no método de licença
+                && EstadoLicenca.Consistente()                // F2.3: estado redundante intacto
+                && VerificadorLicenca.LicencaValida(AppContext.BaseDirectory); // F2.3: licença do zero
+            if (!integro)
                 Environment.Exit(0);
             return;
         }
