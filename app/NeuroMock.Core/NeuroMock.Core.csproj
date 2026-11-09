@@ -3,8 +3,8 @@
   <!-- Lógica pura (licença, processamento de sinal, sensor simulado, sessão), sem dependência
        de Avalonia: testável em isolamento, como o Core do produto real. -->
 
-  <ItemGroup>
-    <EmbeddedResource Include="Processamento\parametros.json" LogicalName="NeuroMock.Core.parametros.json" />
-  </ItemGroup>
+  <!-- Até a v2 os parâmetros do DSP vinham de um parametros.json embutido, em claro. Na v3
+       (H1.2) eles saem do pacote e são decodificados em runtime de um bloco mascarado em
+       ParametrosProcessamento: não há mais recurso em claro para embutir. -->
 
 </Project>
