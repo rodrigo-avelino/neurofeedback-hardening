@@ -19,8 +19,8 @@ custo de ataque é medido. Complementa o processo descrito em `05-tds-process.md
 | Build | Sai em | Controle principal | Folhas que tenta fechar |
 |---|---|---|---|
 | v0 | ter 03/11 (saiu) | nenhum (baseline de propósito) | nenhuma; mede o ponto de partida |
-| v1 | qui 05/11 | licença assinada (ECDSA P-256, só a chave pública no cliente) + binding de hardware | G3 |
-| v2 | ter 10/11 | integridade do binário: manifesto de hashes assinado, checagens espalhadas, resposta atrasada | G1 |
+| v1 | qui 05/11 (saiu) | licença assinada (ECDSA P-256, só a chave pública no cliente) + binding de hardware | G3 |
+| v2 | ter 10/11 (saiu seg 09/11) | integridade do binário: manifesto de hashes assinado, checagens espalhadas, resposta atrasada | G1 |
 | v3 | qui 12/11 | anti-debug, anti-hook e ofuscação (renomeação, constantes, fluxo de controle) | G2, H1.2, H2.2 |
 | v4 | ter 17/11 | Native AOT com metadados enxutos | H1.1, H2.1 e os ataques em IL de G1 e G2 |
 | `hipotese/dsp-servidor` | recomendação no relatório | DSP no servidor | árvore 2 inteira; acorda o ramo G4 |
