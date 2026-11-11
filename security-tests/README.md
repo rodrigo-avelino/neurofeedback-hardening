@@ -63,7 +63,9 @@ security-tests/
 
 So no Windows (o alvo e win-x64). Pegue o zip da release, ou gere um com `dotnet publish`
 (ver `app/README.md`; desde a v2, assine a pasta publicada com `app/ferramentas/assinar-pacote.cs`
-antes de zipar, senao o treino fecha sozinho e o controle positivo acusa), e rode:
+antes de zipar, senao o treino fecha sozinho e o controle positivo acusa; desde a v3, ofusque a
+pasta com `app/ferramentas/ofuscar-pacote.ps1` ANTES de assinar, porque a ofuscacao muda os bytes
+que o manifesto cobre), e rode:
 
 ```powershell
 ./security-tests/run-all.ps1 -Artefato .\neuromock-v1-win-x64.zip

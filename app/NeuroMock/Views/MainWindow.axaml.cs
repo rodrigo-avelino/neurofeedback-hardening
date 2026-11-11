@@ -4,6 +4,7 @@ using NeuroMock.Integridade;
 using NeuroMock.ViewModels;
 #if !DEBUG
 using Avalonia.Threading;
+using NeuroMock.Core.Licenciamento;
 #endif
 
 namespace NeuroMock.Views;
@@ -36,11 +37,12 @@ public partial class MainWindow : Window
     }
 
 #if !DEBUG
-    // Resposta atrasada 1 (v2). Alguns segundos depois de o treino abrir, num momento sorteado,
-    // confere os selos das duas guardas; se faltar um ou algum acusar adulteração, fecha a janela
-    // por um caminho comum, longe do ponto da checagem. A conferência é repetida de propósito na
-    // resposta 2 (MainWindowViewModel): uma função compartilhada seria um ponto único para
-    // neutralizar. Só existe em Release: o app de Debug não tem manifesto assinado.
+    // Resposta atrasada 1 (v2, estendida na v3). Alguns segundos depois de o treino abrir, num
+    // momento sorteado, agrega os selos das duas guardas da v2 e os sinais de execução da v3
+    // (depurador, hook e licença reverificada); se algo acusar adulteração, fecha a janela por um
+    // caminho comum, longe do ponto da checagem. A agregação é repetida de propósito na resposta 2
+    // (MainWindowViewModel): uma função compartilhada seria um ponto único para neutralizar. Só
+    // existe em Release: o app de Debug não tem manifesto assinado.
     private void ArmarResposta()
     {
         var relogio = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(Random.Shared.Next(4_000, 10_000)) };
@@ -55,8 +57,15 @@ public partial class MainWindow : Window
             }
 
             relogio.Stop();
-            if (pacote is not { IsCompletedSuccessfully: true, Result: true }
-                || carregados is not { IsCompletedSuccessfully: true, Result: true })
+            var integro =
+                pacote is { IsCompletedSuccessfully: true, Result: true }
+                && carregados is { IsCompletedSuccessfully: true, Result: true }
+                && !GuardasRuntime.DepuradorPresente()        // F2.1: depurador agora
+                && !GuardasRuntime.DepuradorVisto             // F2.1: depurador visto no começo
+                && !GuardasRuntime.HookDetectado()            // F2.2: hook/detour no método de licença
+                && EstadoLicenca.Consistente()                // F2.3: estado redundante intacto
+                && VerificadorLicenca.LicencaValida(AppContext.BaseDirectory); // F2.3: licença do zero
+            if (!integro)
                 Close();
         };
         relogio.Start();

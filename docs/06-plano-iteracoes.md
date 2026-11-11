@@ -79,6 +79,58 @@ Decisões que acompanham o desenho:
   de licença. Na medição, o red ataca só a build do ciclo; no produto real, isso pede
   renovabilidade (versão no formato da licença, fim do suporte às versões antigas).
 
+## Desenho da v3 (anti-debug, anti-hook e ofuscação)
+
+Com o binário conferido na v2 (G1 fechado), o caminho mais barato que sobra sai da edição
+estática e vai para a execução (G2): um debugger que altera o retorno da validação (F2.1), um
+hook ou detour do método de licença (F2.2) ou a edição da memória do processo (F2.3). Na árvore
+2, o algoritmo ainda viaja com os parâmetros em claro (H1.2) e numa lógica que descompila quase
+em fonte (H2.2). A v3 encarece esses dois caminhos: manipular o app em execução e ler o
+algoritmo.
+
+| Peça | Como funciona | O que encarece |
+|---|---|---|
+| Anti-debug em runtime (F2.1) | Em Release, uma verificação de depurador (`IsAttached`, `IsLogging` e as APIs do Windows `IsDebuggerPresent` e `CheckRemoteDebuggerPresent`) deixa um selo na inicialização, e as respostas atrasadas conferem o depurador de novo no momento sorteado, pegando também quem anexa depois de o treino abrir. | Alterar o retorno da validação com um depurador anexado passa a fechar o treino alguns segundos depois, longe do ponto do ataque. |
+| Anti-hook por integridade em runtime (F2.2) | O método de decisão da licença é compilado (`PrepareMethod`) e o início do seu código nativo é lido. Um detour (os padrões de salto que Harmony e MonoMod escrevem no prólogo) deixa o selo negativo. | Trocar o método por um stub em execução (hook/detour) é detectado, e a resposta atrasada fecha o treino. |
+| Estado de licença redundante (F2.3) | Não há uma flag "licenciado" única em memória: a decisão não fica guardada num `bool` de vida longa. As respostas atrasadas reverificam a licença do zero (assinatura, máquina e prazo) no momento sorteado e conferem a consistência de uma cópia redundante e codificada do estado. | Editar na memória a flag que liberou a tela não basta: a reverificação independente refaz a conta e discorda. |
+| Parâmetros fora de arquivo em claro (H1.2) | O `parametros.json` embutido sai do pacote. Os números do pipeline passam a ser decodificados em runtime de um bloco de bytes mascarado (no molde da chave embutida da v2), sem o JSON em claro e sem os imediatos numéricos no IL. | Dumpar a configuração deixa de ser abrir um arquivo: os valores não aparecem como recurso nem como constantes legíveis na descompilação. |
+| Renomeação do algoritmo (H2.1 parcial, H2.2) | Na esteira e no teste local, depois do publish e antes de assinar o manifesto, o Obfuscar renomeia os membros internos dos namespaces do algoritmo (`Processamento` e `Sensor`) no `NeuroMock.Core.dll`. A API pública é preservada (`KeepPublicApi`), para o `NeuroMock.dll` não ofuscado continuar ligando. | Ler a lógica fica mais caro: os nomes dos passos internos somem e, com os parâmetros empacotados, a descompilação perde os rótulos e as constantes. |
+
+Decisões que acompanham o desenho:
+
+- **Mesma resposta da v2.** O que a v3 detecta (depurador, hook, estado de licença
+  inconsistente) alimenta as mesmas duas respostas atrasadas da v2, em pontos diferentes, em
+  momentos sorteados e por caminhos diferentes (uma fecha a janela, a outra encerra o processo
+  fora da thread da interface). Falha fechada: selo ausente ou negativo conta como adulteração.
+  Só em Release, e nunca mexe no sinal nem no índice, porque num app clínico um falso positivo
+  da verificação não pode virar feedback errado para o paciente.
+- **Obfuscar, versão fixada.** A ofuscação é o Obfuscar (gratuito), com a versão fixada no
+  `app/ferramentas/ofuscar-pacote.ps1`. Ela muda os bytes dos assemblies, então entra depois do
+  publish e antes da assinatura do manifesto, na esteira (job `build-release`) e no teste local;
+  o manifesto passa a cobrir os bytes ofuscados.
+- **Renomeação só do algoritmo.** O Obfuscar renomeia apenas `Processamento` e `Sensor`, onde a
+  matriz mapeia H2.1 e H2.2. `Licenciamento` e `Integridade` ficam legíveis, então os testes
+  T-F1.x do red (que acham o alvo pelo nome: `VerificadorLicenca`, `LicencaValida`,
+  `AssinaturaConfere`) continuam válidos e verdes sem mudança. A licença não depende de
+  obscuridade: é protegida pela integridade (v2) e pelos controles de runtime da v3 (F2.x). Os
+  T-F3.x não dependem de nomes.
+- **API pública preservada.** O `NeuroMock.dll` (App, com o XAML compilado do Avalonia) não é
+  ofuscado, e a API pública do Core é mantida, para as ligações compiladas e as chamadas do App
+  continuarem resolvendo. Renomear também o App e a sua superfície pública fica para a v4, junto
+  com o Native AOT.
+- **Fluxo de controle fica de fora.** Nenhuma ferramenta gratuita faz ofuscação de fluxo de
+  controle de forma estável no .NET 10 com Avalonia self-contained sem risco alto de quebrar o
+  pacote. A v3 entrega renomeação e ocultação de constantes; o fluxo de controle fica como
+  lacuna registrada (teto honesto) e some de vez na v4, quando o Native AOT tira o IL de cena.
+- **Nomes do IL: a medição compara as duas builds.** Na v2 os nomes ficaram claros de propósito;
+  na v3 a renomeação do algoritmo é o próprio controle. O red mede descompilando o `Core.dll` da
+  v2 e o da v3 e comparando a legibilidade.
+- **Teto honesto.** Tudo continua no cliente. Anti-debug, anti-hook e estado redundante elevam o
+  custo de G2, não o fecham em definitivo: quem desliga as duas respostas (ou as reimplementa)
+  vence, e os parâmetros decodificados existem em memória em runtime. O ganho é o custo de achar
+  e de manter o ataque, não uma barreira. F2.1 e F2.3 podem ser medidas na mão (debugger e
+  edição de memória são difíceis de automatizar na esteira).
+
 ## Calendário até a apresentação (24/11)
 
 A apresentação foi antecipada para ter 24/11. O time se encontra presencialmente às terças e

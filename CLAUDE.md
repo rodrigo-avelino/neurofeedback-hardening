@@ -72,6 +72,21 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   aberto. Os T-F1.x do red (PRs #17, #19 e #21, medidos contra a v1 em 5 a 15 min) entraram no
   PR da v2 (#15), que vira F1.1 a F1.3 para `fechada` (09/11/2026). Desenho em
   `docs/06-plano-iteracoes.md`.
+- Ofuscação e execução v3 (09/11/2026, contra o ramo G2 e a árvore 2): o Obfuscar (gratuito,
+  com a versão fixada no `app/ferramentas/ofuscar-pacote.ps1`) renomeia só o algoritmo (namespaces
+  `Processamento` e `Sensor` do Core) por `app/ferramentas/ofuscar-pacote.ps1`, depois do publish
+  e antes de assinar o manifesto (a ofuscação muda os bytes que o manifesto cobre), no job
+  `build-release` e no teste local. `Licenciamento` e `Integridade` ficam legíveis de propósito,
+  para os T-F1.x do red seguirem válidos pelo nome (decidido com o Rodrigo); a API pública é
+  preservada, para o App não ofuscado continuar ligando. O fluxo de controle fica de fora (lacuna
+  registrada, teto honesto; vem na v4 com Native AOT), por falta de ferramenta gratuita estável no
+  .NET 10 com Avalonia. Anti-debug (F2.1), anti-hook por integridade em runtime (F2.2) e estado de
+  licença redundante com reverificação (F2.3) alimentam as mesmas duas respostas atrasadas da v2,
+  falha fechada, só em Release. Os parâmetros do DSP saíram do `parametros.json` em claro para um
+  bloco mascarado decodificado em runtime (H1.2). Controle positivo completo e T-F1.x/T-F3.x
+  verdes contra o zip v3 ofuscado e assinado; as folhas F2.x, H1.2 e H2.2 só viram `fechada`
+  quando os testes do red chegarem (qui 12/11). Desenho em `docs/06-plano-iteracoes.md`, seção
+  "Desenho da v3".
 - Calendário até a apresentação de ter 24/11 (decidido em 03/11/2026): um ciclo por encontro
   presencial de terça e quinta. Qui 05/11 fecha a v0 e lança a v1; ter 10/11 a v2; qui 12/11 a
   v3; ter 17/11 a v4; qui 19/11 fecha tudo; depois só documentação e ensaio. O blue anda uma

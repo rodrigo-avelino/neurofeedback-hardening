@@ -4,7 +4,7 @@
     "F1.2": "fechada",
     "F1.3": "fechada",
     "F2.1": "aberta",
-    "F2.2": "aberta",
+    "F2.2": "fechada",
     "F2.3": "aberta",
     "F3.1": "fechada",
     "F3.2": "fechada",
@@ -13,7 +13,7 @@
     "F4.x": "inativa",
     "F5.x": "inativa",
     "H1.1": "aberta",
-    "H1.2": "aberta",
+    "H1.2": "fechada",
     "H2.1": "aberta",
     "H2.2": "aberta"
   }

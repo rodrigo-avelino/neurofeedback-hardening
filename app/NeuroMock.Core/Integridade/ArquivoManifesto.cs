@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Threading;
 
 namespace NeuroMock.Core.Integridade;
 
@@ -19,7 +20,7 @@ public static class ArquivoManifesto
 
         try
         {
-            return JsonSerializer.Deserialize(File.ReadAllText(caminho), ContextoJsonManifesto.Default.Manifesto);
+            return JsonSerializer.Deserialize(ComRetentativa(() => File.ReadAllText(caminho)), ContextoJsonManifesto.Default.Manifesto);
         }
         catch (JsonException)
         {
@@ -46,11 +47,31 @@ public static class ArquivoManifesto
     }
 
     /// <summary>SHA-256 do arquivo, em hexadecimal minúsculo.</summary>
-    public static string Sha256(string caminhoAbsoluto)
+    public static string Sha256(string caminhoAbsoluto) => ComRetentativa(() =>
     {
         // Leitura compartilhada: o executável e os assemblies do próprio app estão abertos pelo loader.
         using var fluxo = new FileStream(
             caminhoAbsoluto, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
         return Convert.ToHexStringLower(SHA256.HashData(fluxo));
+    });
+
+    // Num pacote recém-criado (deploy novo, ou as cópias que a esteira extrai do zip), o antivírus
+    // pode segurar um arquivo por um instante e a leitura falha com IOException. Isso não é
+    // adulteração: tenta de novo algumas vezes (backoff curto, menos de 1 s no total) antes de
+    // desistir, para a verificação de integridade não confundir uma trava transitória com um
+    // pacote adulterado. Uma trava persistente ainda estoura, e o pacote conta como adulterado.
+    private static T ComRetentativa<T>(Func<T> ler)
+    {
+        for (var tentativa = 0; ; tentativa++)
+        {
+            try
+            {
+                return ler();
+            }
+            catch (IOException) when (tentativa < 8)
+            {
+                Thread.Sleep(50 + tentativa * 25);
+            }
+        }
     }
 }

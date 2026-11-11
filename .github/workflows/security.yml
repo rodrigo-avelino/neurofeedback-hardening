@@ -129,8 +129,9 @@ jobs:
         with:
           global-json-file: global.json
       # O empacotamento do produto real (sem single-file, sem ReadyToRun, sem trimming, sem PDB)
-      # fica no csproj do app. Controles de build (ofuscacao, Native AOT) tambem entram por la,
-      # num PR, e nao por flag escondida aqui.
+      # fica no csproj do app. A ofuscacao da v3 entra como passo visivel a seguir, pela ferramenta
+      # versionada app/ferramentas/ofuscar-pacote.ps1 (Obfuscar com versao fixada no script), nao
+      # como flag escondida aqui; o Native AOT da v4 entrara pelo csproj.
       # Self-contained embute o runtime do SDK usado: o global.json (latestFeature) garante o
       # SDK 10.0 mais recente, e a versao fica registrada no resumo da build.
       - name: Publicar
@@ -138,6 +139,13 @@ jobs:
         run: |
           "SDK: $(dotnet --version)" >> $env:GITHUB_STEP_SUMMARY
           dotnet publish $env:APP_PROJETO -c Release -r win-x64 --self-contained true -o publicado
+      # A partir da v3, a ofuscacao renomeia o algoritmo (so os namespaces Processamento e Sensor do
+      # Core) e oculta constantes. Entra depois do publish e antes da assinatura, porque muda os
+      # bytes dos assemblies e o manifesto tem de cobrir o resultado. As classes de licenca ficam
+      # legiveis de proposito (os testes T-F1.x do red acham o alvo pelo nome).
+      - name: Ofuscar o algoritmo
+        shell: pwsh
+        run: ./app/ferramentas/ofuscar-pacote.ps1 -Pasta publicado
       # A partir da v2, o pacote leva o manifesto de integridade: o SHA-256 de cada arquivo
       # publicado, assinado com a chave privada do fornecedor (a mesma das licencas). O app
       # confere o manifesto em execucao e, se o pacote foi adulterado ou nao tem manifesto
