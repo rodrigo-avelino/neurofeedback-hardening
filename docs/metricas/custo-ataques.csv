@@ -6,3 +6,8 @@ data,build,folha,modo,atacante,ferramentas,minutos,resultado,evidencia
 2026-11-06,v1,F1.3,preta,Victor Targino,ILSpy + dnlib + IA,15,sucesso,T-F1.3 verde: stub em LicencaValida sempre devolve true e a janela NeuroMock abriu
 2026-11-07,v1,F1.2,preta,Victor Targino,ILSpy + dnlib + IA,5,sucesso,T-F1.2 verde: brfalse do portao do App virou pop e a janela NeuroMock abriu sem licenca
 2026-11-07,v1,F1.1,preta,Victor Targino,ILSpy + dnlib + IA,10,sucesso,T-F1.1 verde: edit no IL de AssinaturaConfere (pop + ldc.i4.1 apos VerifyData) aceita licenca adulterada
+2026-11-10,v2,F1.1,preta,Victor Targino,esteira + IA,15,falha,integridade da v2 pega o patch: janela abre em ~2s e o app se encerra sozinho em ~12s (exit 0)
+2026-11-10,v2,F1.2,preta,Victor Targino,esteira + IA,3,falha,mesmo efeito: NOP no portao abre a janela mas a integridade encerra o processo
+2026-11-10,v2,F1.3,preta,Victor Targino,esteira + IA,3,falha,mesmo efeito: stub abre a janela mas a integridade encerra o processo
+2026-11-10,v2,F2.1,preta,Guilherme,dnSpyEx + IA,10,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/26
+2026-11-10,v2,F2.2,preta,Guilherme,Harmony + dnSpyEx + IA,3,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/27
