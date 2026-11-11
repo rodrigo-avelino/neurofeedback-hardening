@@ -4,7 +4,16 @@
     <OutputType>WinExe</OutputType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
+    <!-- v4 (ter 17/11): Native AOT. O publish win-x64 vira um executavel nativo sem IL nem
+         metadados gerenciados: os ataques em IL de G1 e G2 (reescrita com dnlib) perdem o assembly
+         alvo e a analise estatica do algoritmo (H1.1, H2.1) fica mais cara. O RID entra no publish
+         (-r win-x64), nao aqui, para o build/test sem RID (jobs Linux da esteira) nao disparar o
+         AOT. O ILCompiler nao e referenciado explicitamente (uma PackageReference quebra o AOT com
+         "PrivateSdkAssemblies is required"): a versao vem do SDK. O global.json fixa o SDK 10.0.403,
+         cujo ILCompiler 10.0.14 fica fora do advisory GHSA-p3jp-9v83-76w9 (o 10.0.12 do SDK 10.0.401
+         seria barrado pelo gate de SCA). -->
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>
