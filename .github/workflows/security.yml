@@ -138,6 +138,8 @@ jobs:
         shell: pwsh
         run: |
           "SDK: $(dotnet --version)" >> $env:GITHUB_STEP_SUMMARY
+          # O link Native AOT chama o vswhere para achar o MSVC; garante o Installer do VS no PATH.
+          $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\Installer;$env:PATH"
           dotnet publish $env:APP_PROJETO -c Release -r win-x64 -o publicado
       # A partir da v2, o pacote leva o manifesto de integridade: o SHA-256 de cada arquivo
       # publicado, assinado com a chave privada do fornecedor (a mesma das licencas). O app
