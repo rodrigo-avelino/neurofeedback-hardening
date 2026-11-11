@@ -26,6 +26,9 @@
        a suíte. O alvo continua sendo o zip da release, nunca o código do app. -->
   <ItemGroup>
     <ProjectReference Include="..\..\app\NeuroMock.Fornecedor\NeuroMock.Fornecedor.csproj" />
+    <!-- Injetor do ataque F2.2: vira HookLicenca.dll + 0Harmony.dll na saída, que o T-F2.2
+         aponta em DOTNET_STARTUP_HOOKS ao rodar o alvo. -->
+    <ProjectReference Include="..\HookLicenca\HookLicenca.csproj" />
   </ItemGroup>
 
 </Project>

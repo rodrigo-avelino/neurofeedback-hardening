@@ -9,3 +9,5 @@ data,build,folha,modo,atacante,ferramentas,minutos,resultado,evidencia
 2026-11-10,v2,F1.1,preta,Victor Targino,esteira + IA,15,falha,integridade da v2 pega o patch: janela abre em ~2s e o app se encerra sozinho em ~12s (exit 0)
 2026-11-10,v2,F1.2,preta,Victor Targino,esteira + IA,3,falha,mesmo efeito: NOP no portao abre a janela mas a integridade encerra o processo
 2026-11-10,v2,F1.3,preta,Victor Targino,esteira + IA,3,falha,mesmo efeito: stub abre a janela mas a integridade encerra o processo
+2026-11-10,v2,F2.1,preta,Guilherme,dnSpyEx + IA,10,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/26
+2026-11-10,v2,F2.2,preta,Guilherme,Harmony + dnSpyEx + IA,3,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/27
