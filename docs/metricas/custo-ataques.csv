@@ -13,3 +13,4 @@ data,build,folha,modo,atacante,ferramentas,minutos,resultado,evidencia
 2026-11-10,v2,F2.2,preta,Guilherme,Harmony + dnSpyEx + IA,3,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/27
 2026-11-10,v2,H1.2,preta,Guilherme,dnSpyEx + dnlib + IA,5,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/30
 2026-11-10,v2,H2.2,preta,Guilherme,dnSpyEx + dotnet-SDK + IA,7,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/32
+2026-11-10,v2,F2.3,preta,Guilherme,dnSpyEx + dnlib,4,falha,LicencaValida chamada so uma vez no startup (unico caller App.OnFrameworkInitializationCompleted); sem flag persistente nem revalidacao; editor de memoria sem alvo
