@@ -24,6 +24,14 @@ public sealed class T_F1_2
         ControlePositivo.Garantir();
 
         using var copia = Alvo.NovaCopia();
+        if (copia.EhNativo)
+        {
+            // v4 Native AOT: o NOP no salto do portao nao tem IL gerenciado para patchear.
+            // Ataque neutralizado por construcao.
+            EstadoFolhas.Verificar("F1.2", ataqueFuncionou: false);
+            return;
+        }
+
         copia.RemoverLicenca();   // sem licença: o portão mandaria pra JanelaAtivacao
 
         Assembleia.Modificar(copia.Caminho("NeuroMock.dll"), modulo =>

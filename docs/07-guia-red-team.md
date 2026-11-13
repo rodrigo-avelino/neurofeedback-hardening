@@ -101,6 +101,27 @@ reimplementar o processamento a ponto de reproduzir a saída. A verificação po
 uma entrada que vocês não viram, fica combinada na primeira reunião red/blue. Registrem o tempo de cada
 etapa.
 
+## A partir da v4: Native AOT
+
+A v4 publica o app em Native AOT: o pacote é o `NeuroMock.exe` nativo (mais as libs nativas do
+Avalonia), sem `NeuroMock.dll` nem `NeuroMock.Core.dll`, sem `deps.json`/`runtimeconfig.json`. O IL
+gerenciado saiu de cena, então dnSpyEx, ILSpy e dnlib não têm o que abrir: os ataques estáticos em
+IL (F1.x) e a leitura/reflexão do Core (H1.1, H1.2, H2.1, H2.2) mudam de ferramenta para engenharia
+reversa nativa (x64dbg, Ghidra, IDA).
+
+O blue adaptou o harness de regressão para o alvo nativo (decidido na reunião red/blue, a partir dos
+ataques de vocês em caixa preta à v3). Um guarda (`CopiaDoAlvo.EhNativo`) detecta o build nativo e:
+
+- folhas em IL já fechadas (F1.1, F1.2, F1.3, H1.2): contra o nativo o ataque não tem alvo
+  gerenciado, então o teste conta como neutralizado por construção (verde);
+- folhas do algoritmo abertas (H1.1, H2.1, H2.2): o vetor de decompilação gerenciada sumiu, mas a
+  folha segue aberta pela RE do nativo; o teste automático pula (medida na mão) e o custo da RE
+  nativa entra no CSV quando vocês atacarem a v4.
+
+Os testes T-H1.1 e T-H2.1 de vocês (escritos contra a v3 ofuscada) continuam valendo como registro
+da v3; contra a v4 nativa eles pulam sozinhos pelo mesmo guarda. H2.2 só fecha de verdade movendo o
+DSP para o servidor: no cliente, o AOT encarece, não fecha.
+
 ## O que não fazer
 
 - Atacar a infraestrutura: GitHub, esteira, máquinas dos colegas.
@@ -141,6 +162,12 @@ Regras que você deve seguir:
   para "fechada": isso é do blue.
 - Não ataque a infraestrutura (GitHub, CI, máquinas de terceiros) e não commite binário
   adulterado, licença emitida por nós nem segredo.
+- A PARTIR DA v4 o alvo é Native AOT: um único NeuroMock.exe nativo, sem NeuroMock.dll nem
+  NeuroMock.Core.dll e sem deps.json/runtimeconfig.json. dnSpyEx/ILSpy/dnlib não acham código
+  gerenciado; use RE nativa (x64dbg, Ghidra, IDA) e meça o custo no CSV. O harness de regressão já
+  tem um guarda (CopiaDoAlvo.EhNativo): contra o nativo os testes em IL/reflexão se neutralizam
+  (folhas fechadas F1.x, H1.2) ou pulam (folhas abertas do algoritmo H1.1, H2.1, H2.2, medidas na
+  mão). Não removam esse guarda ao escrever testes novos para a v4.
 - Escreva em PT-BR e evite travessões.
 ```
 

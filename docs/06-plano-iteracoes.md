@@ -171,12 +171,15 @@ Decisões que acompanham o desenho:
   reflexão), mas quem faz a engenharia reversa do nativo ou dirige o executável como caixa preta
   ainda reproduz a saída. H2.2 só fecha movendo o DSP para o servidor (recomendação arquitetural).
   A matriz marca a v4 como parcial em H2.2.
-- **O harness do red muda de alvo.** Os testes de regressão que reescrevem ou leem IL (T-F1.1,
-  T-F1.2, T-F1.3, T-F2.2, T-H1.2, T-H2.2) abrem assemblies gerenciados com dnlib/reflexão, que o
-  pacote AOT não tem: contra o nativo eles perdem o alvo. Re-expressá-los (análise estática do
-  nativo, ou declarar a neutralização) é trabalho do red, no encontro de ter 17/11. Os testes de
-  caixa preta (controle positivo, T-F3.x) seguem valendo sem mudança. Pela regra de ouro, o
-  `estado-folhas.json` só muda no fechamento do ciclo, com os testes do red.
+- **O harness ganhou um guarda nativo.** Os testes de regressão que reescrevem ou leem IL (T-F1.1,
+  T-F1.2, T-F1.3, T-H1.2) e o oráculo por reflexão (T-H2.2, mais os T-H1.1/T-H2.1 do red) abrem
+  assemblies gerenciados com dnlib/reflexão, que o pacote AOT não tem. Decidido na reunião red/blue
+  (a partir dos ataques do red à v3, issues #36/#38), o blue adicionou um guarda
+  (`CopiaDoAlvo.EhNativo`): contra o alvo nativo, as folhas em IL já fechadas (F1.x, H1.2) contam
+  como neutralizadas por construção (verde) e as folhas do algoritmo abertas (H1.1, H2.1, H2.2)
+  pulam (`Assert.Skip`, medidas na mão na RE do nativo). Os testes de caixa preta (controle
+  positivo, T-F3.x, T-F2.2) seguem sem mudança. Pela regra de ouro, o `estado-folhas.json` só muda
+  no fechamento do ciclo, com os testes do red.
 - **Só em Release.** Como v2 e v3, as guardas e respostas só existem em Release, e o AOT é da
   publicação de Release. Em Debug o app roda em IL, para desenvolvimento.
 

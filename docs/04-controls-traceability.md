@@ -93,9 +93,11 @@ Legendas:
   cliente, só o servidor fecha. A guarda 2 da v2 passa a conferir o hash da imagem nativa
   (`Environment.ProcessPath`); a guarda 1, o manifesto assinado e as respostas atrasadas seguem; o
   Obfuscar sai (não há `Core.dll` a renomear). **F2.1** (debugger) e **F2.3** (editar memória)
-  seguem abertas e medidas na mão: o atacante controla a máquina. A coluna v4 é preenchida no
-  fechamento de ter 17/11, quando os testes do red re-expressos contra o nativo e os novos
-  T-H1.1/T-H2.1 entram na `main`; até lá fica `?`.
+  seguem abertas e medidas na mão: o atacante controla a máquina. O harness ganhou um guarda
+  (`CopiaDoAlvo.EhNativo`, adicionado pelo blue após os ataques do red à v3, issues #36/#38):
+  contra o nativo as folhas em IL (F1.x, H1.2) contam como neutralizadas e as do algoritmo (H1.1,
+  H2.1, H2.2) pulam (medidas na mão). A coluna v4 é preenchida quando o red atacar a v4 nativa; até
+  lá fica `?`.
 
 > As colunas de CWE/ASPIRE/MASVS continuam sujeitas a revisão ao implementar cada controle. O
 > objetivo é que nenhuma escolha fique sem fundamentação.
