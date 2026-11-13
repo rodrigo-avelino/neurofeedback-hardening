@@ -23,6 +23,15 @@ public sealed class T_H1_1
         ControlePositivo.Garantir();
 
         using var copia = Alvo.NovaCopia();
+        if (copia.EhNativo)
+        {
+            // v4 Native AOT: nao ha NeuroMock.Core.dll para decompilar e ler o IL do pipeline. H1.1
+            // segue ABERTA, agora so por engenharia reversa do binario nativo (medida na mao, fora
+            // da esteira). O AOT encarece a reconstrucao, nao a fecha.
+            Assert.Skip("v4 Native AOT: sem Core gerenciado para decompilar; H1.1 aberta, medida na mao no nativo.");
+            return;
+        }
+
         var reconstruiu = PipelineLegivel(copia.Caminho("NeuroMock.Core.dll"));
 
         EstadoFolhas.Verificar("H1.1", ataqueFuncionou: reconstruiu);

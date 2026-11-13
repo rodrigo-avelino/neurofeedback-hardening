@@ -24,6 +24,15 @@ public sealed class T_H2_1
         ControlePositivo.Garantir();
 
         using var copia = Alvo.NovaCopia();
+        if (copia.EhNativo)
+        {
+            // v4 Native AOT: nao ha NeuroMock.Core.dll para abrir e localizar o namespace do
+            // algoritmo pelos nomes publicos. H2.1 segue ABERTA, agora so por engenharia reversa do
+            // binario nativo (medida na mao). O AOT tira os metadados gerenciados, nao o algoritmo.
+            Assert.Skip("v4 Native AOT: sem Core gerenciado para localizar o modulo; H2.1 aberta, medida na mao no nativo.");
+            return;
+        }
+
         var localizado = ModuloLocalizavel(copia.Caminho("NeuroMock.Core.dll"));
 
         EstadoFolhas.Verificar("H2.1", ataqueFuncionou: localizado);
