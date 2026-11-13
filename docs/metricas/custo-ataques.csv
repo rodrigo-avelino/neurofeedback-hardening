@@ -9,6 +9,9 @@ data,build,folha,modo,atacante,ferramentas,minutos,resultado,evidencia
 2026-11-10,v2,F1.1,preta,Victor Targino,esteira + IA,15,falha,integridade da v2 pega o patch: janela abre em ~2s e o app se encerra sozinho em ~12s (exit 0)
 2026-11-10,v2,F1.2,preta,Victor Targino,esteira + IA,3,falha,mesmo efeito: NOP no portao abre a janela mas a integridade encerra o processo
 2026-11-10,v2,F1.3,preta,Victor Targino,esteira + IA,3,falha,mesmo efeito: stub abre a janela mas a integridade encerra o processo
+2026-11-13,v4,F1.1,preta,Victor Targino,dnSpy/dnlib sem alvo + strings/PE (python),10,falha,Native AOT: sem IL e sem NeuroMock.dll pra editar; LicencaValida/AssinaturaConfere ainda vazam como string mas o patch no IL da v1 nao se aplica
+2026-11-13,v4,F1.2,preta,Victor Targino,strings/PE (python) + PowerShell + IA,30,falha,patch de 1 byte no NeuroMock.exe muda o sha256 (31a2e0.. -> c00f94..) e nao bate com o manifesto assinado; a guarda 2 confere ProcessPath contra o manifesto e sem a chave nao da pra reassinar; sem Ghidra/IDA no timebox pra achar o salto nativo
+2026-11-13,v4,F1.3,preta,Victor Targino,dnSpy/dnlib sem alvo + strings/PE (python),5,falha,sem metodo gerenciado pra trocar por stub no AOT; mesma parede da integridade assinada do F1.2
 2026-11-10,v2,F2.1,preta,Guilherme,dnSpyEx + IA,10,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/26
 2026-11-10,v2,F2.2,preta,Guilherme,Harmony + dnSpyEx + IA,3,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/27
 2026-11-10,v2,H1.2,preta,Guilherme,dnSpyEx + dnlib + IA,5,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/30
