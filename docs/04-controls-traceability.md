@@ -30,9 +30,9 @@ mediu o ramo G1 (F1.1, F1.2 e F1.3), que a v2 fecha.
 | F1.1 | T-F1.1 | integridade do binário: manifesto assinado do pacote, duas guardas e resposta atrasada; segunda cópia da chave pública | v2 | CWE-602 | Software Security; Secure SW Lifecycle | anti-tampering | RESILIENCE-2 | A* | A | F | F | ? |
 | F1.2 | T-F1.2 | idem (integridade do binário) | v2 | CWE-602 | Software Security | anti-tampering | RESILIENCE-2 | A* | A | F | F | ? |
 | F1.3 | T-F1.3 | idem | v2 | CWE-602 | Software Security | anti-tampering | RESILIENCE-2 | A* | A | F | F | ? |
-| F2.1 | medida na mão | anti-debug + checagem em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A* | A* | A* | A | ? |
+| F2.1 | medida na mão | anti-debug + checagem em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A* | A* | A* | F | ? |
 | F2.2 | T-F2.2 | detecção de hook + integridade em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A* | A* | A* | F | ? |
-| F2.3 | medida na mão | estado de licença sem flag única em memória; verificação redundante | v3 | CWE-642 | Software Security | anti-tampering | RESILIENCE-2 | A* | A* | A* | A | ? |
+| F2.3 | medida na mão | estado de licença sem flag única em memória; verificação redundante | v3 | CWE-642 | Software Security | anti-tampering | RESILIENCE-2 | A* | A* | A* | F | ? |
 | F3.1 | T-F3.1 | binding de licença ao hardware | v1 | CWE-1390 | AAA | renovabilidade | n/a | A | F | F | F | ? |
 | F3.2 | T-F3.2 | validação assimétrica (só a chave pública no cliente) | v1 | CWE-321 | Cryptography; AAA | ocultação de dados | CRYPTO-2 | A | F | F | F | ? |
 | F3.3 | T-F3.3 | licença assinada (ECDSA); cifrar não basta, a chave estaria no cliente | v1 | CWE-345 | Cryptography | ocultação de dados | CRYPTO-1 | A | F | F | F | ? |
@@ -83,6 +83,11 @@ Legendas:
   AOT). F2.1 (debugger) e F2.3 (editar memória) são medidas na mão, sem teste automático: o red
   registrou que F2.3 nem tem alvo na v2 (não há flag persistente), o que a v3 torna explícito com o
   estado redundante.
+- **Fecho de F2.1 e F2.3 (13/11/2026).** A medição do red na v3 (`custo-ataques.csv`, issue #40)
+  fechou as duas: o anti-debug (F2.1) detecta o depurador e o estado redundante mais a reverificação
+  (F2.3) derrubam a edição de memória, cada ataque fechando o treino em cerca de 5 a 6 s (o harness
+  exige 30 s aberto). As duas passam a `fechada`, medidas na mão (sem teste automático, como o plano
+  previu). A issue #26 (F2.1) fecha por isto.
 - **Desenho da v4 (11/11/2026).** A v4 publica o app em Native AOT (desenho em
   `06-plano-iteracoes.md`, seção "Desenho da v4"): o `NeuroMock.exe` vira nativo, sem IL nem
   metadados gerenciados, e somem os assemblies gerenciados (`NeuroMock.dll`, `NeuroMock.Core.dll`) e
