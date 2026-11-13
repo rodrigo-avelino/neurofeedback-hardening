@@ -23,6 +23,16 @@ public sealed class T_H2_2
         ControlePositivo.Garantir();
 
         using var copia = Alvo.NovaCopia();
+        if (copia.EhNativo)
+        {
+            // v4 Native AOT: nao da para Assembly.Load do NeuroMock.Core.dll (nao existe) para rodar
+            // o ProcessadorSinal original por reflexao. H2.2 segue ABERTA, agora so por engenharia
+            // reversa do binario nativo ou dirigindo o exe como caixa preta: medida na mao, fora da
+            // esteira. So o servidor fecha de verdade.
+            Assert.Skip("v4 Native AOT: sem Core gerenciado para o oraculo; H2.2 aberta, medida na mao no nativo.");
+            return;
+        }
+
         var reproduz = ReproduzOAlgoritmo(copia.Caminho("NeuroMock.Core.dll"));
 
         EstadoFolhas.Verificar("H2.2", ataqueFuncionou: reproduz);

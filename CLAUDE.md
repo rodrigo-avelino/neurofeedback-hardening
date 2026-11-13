@@ -87,6 +87,23 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
   verdes contra o zip v3 ofuscado e assinado; as folhas F2.x, H1.2 e H2.2 só viram `fechada`
   quando os testes do red chegarem (qui 12/11). Desenho em `docs/06-plano-iteracoes.md`, seção
   "Desenho da v3".
+- Native AOT v4 (11/11/2026, branch `claude/v4-native-aot-cb46fc`, contra os ataques em IL de G1 e
+  G2 e a árvore 2): `PublishAot` no csproj do App e `IsAotCompatible` no Core. O publish win-x64
+  vira um único `NeuroMock.exe` nativo (mais as libs nativas do Avalonia: Skia, HarfBuzz, ANGLE),
+  sem IL nem metadados gerenciados: somem o `NeuroMock.dll`, o `NeuroMock.Core.dll`, o `deps.json`
+  e o `runtimeconfig.json`. Os ataques do red em IL (T-F1.x, stub, hook por
+  `DOTNET_STARTUP_HOOKS`/Harmony) e o oráculo por reflexão (T-H1.2, T-H2.2) perdem o alvo
+  gerenciado; encarece a análise estática do algoritmo (H1.1, H2.1). A guarda 2 da v2 passa a
+  conferir o hash da imagem nativa (`Environment.ProcessPath`) contra o manifesto, porque
+  `Assembly.Location` e os `.json` do runtime somem no AOT; a guarda 1, o manifesto assinado e as
+  respostas atrasadas seguem. O Obfuscar sai do `build-release` (não há mais `Core.dll` a renomear;
+  o AOT subsume e cobre a lacuna de fluxo de controle da v3). O `global.json` fixa o SDK 10.0.403
+  (ILCompiler 10.0.14, fora do advisory alto GHSA-p3jp-9v83-76w9 do 10.0.12 que o SDK 10.0.401
+  traz); fixar o ILCompiler por `PackageReference` quebra o AOT. Link nativo usa o MSVC (vswhere no
+  PATH; automático no `windows-latest`). Teto honesto: H2.2 não fecha, o DSP ainda roda no cliente
+  (só o servidor fecha). Controle positivo verificado contra o zip AOT assinado; os testes do red
+  re-expressos contra o nativo (T-F1.x, T-F2.2, T-H1.2, T-H2.2) e os novos T-H1.1/T-H2.1 chegam no
+  encontro de ter 17/11. Desenho em `docs/06-plano-iteracoes.md`, seção "Desenho da v4".
 - Calendário até a apresentação de ter 24/11 (decidido em 03/11/2026): um ciclo por encontro
   presencial de terça e quinta. Qui 05/11 fecha a v0 e lança a v1; ter 10/11 a v2; qui 12/11 a
   v3; ter 17/11 a v4; qui 19/11 fecha tudo; depois só documentação e ensaio. O blue anda uma
@@ -151,3 +168,8 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 - [x] Configuração manual no GitHub (colaboradores, label, rulesets, secret): ver o plano.
 - [ ] Atualizar o DFD (instalador sem auto-update, canal local dos jogos) e gerar o DFD e a
   árvore de ataque 2 como diagramas em `docs/assets/`.
+- [ ] v4 Native AOT na branch `claude/v4-native-aot-cb46fc` (draft PR), para o encontro de ter
+  17/11: csproj com `PublishAot`, guarda 2 na imagem nativa, Obfuscar fora do `build-release`,
+  `global.json` no SDK 10.0.403 e docs. Falta instalar o SDK 10.0.403 na máquina do blue e chegarem
+  os testes T-H1.1/T-H2.1 do red, mais a re-expressão de T-F1.x/T-F2.2/T-H1.2/T-H2.2 contra o
+  nativo, que a esteira exige para ficar verde.

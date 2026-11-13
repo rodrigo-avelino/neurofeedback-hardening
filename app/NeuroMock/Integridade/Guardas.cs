@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -64,15 +63,17 @@ internal static class Guardas
 
             var comparacao = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
             var declarados = manifesto.Arquivos.ToDictionary(entrada => entrada.Caminho, entrada => entrada.Sha256, comparacao);
-            foreach (var arquivo in EmExecucao())
-            {
-                // Assembly carregado de fora da pasta (ou da memória, sem caminho) não está no manifesto.
-                var relativo = Path.GetRelativePath(pastaPacote, arquivo).Replace(Path.DirectorySeparatorChar, '/');
-                if (!declarados.TryGetValue(relativo, out var esperado) || ArquivoManifesto.Sha256(arquivo) != esperado)
-                    return false;
-            }
 
-            return true;
+            // Em Native AOT (v4) todo o código gerenciado em execução (App, Core, criptografia,
+            // runtime) está dentro do único executável nativo: não há assemblies em disco nem
+            // deps.json/runtimeconfig.json (Assembly.Location devolveria vazio, IL3000). "De onde o
+            // código foi carregado" colapsa para a imagem nativa, e conferir o hash dela cobre de
+            // uma vez o que antes eram vários arquivos. Falha fechada: sem o caminho da imagem,
+            // conta como adulteração.
+            if (Environment.ProcessPath is not { Length: > 0 } imagem)
+                return false;
+            var relativo = Path.GetRelativePath(pastaPacote, imagem).Replace(Path.DirectorySeparatorChar, '/');
+            return declarados.TryGetValue(relativo, out var esperado) && ArquivoManifesto.Sha256(imagem) == esperado;
         }
         catch (Exception e) when (e is ArgumentException or FormatException or IOException
                                       or UnauthorizedAccessException or CryptographicException)
@@ -81,18 +82,4 @@ internal static class Guardas
         }
     }
 
-    // De onde o loader tirou o código que está rodando, e não onde ele deveria estar: o app, o
-    // Core (licença e chave), a criptografia e o núcleo do runtime, mais o executável e os dois
-    // arquivos que dizem ao runtime o que carregar.
-    private static IEnumerable<string> EmExecucao()
-    {
-        var app = typeof(Guardas).Assembly.Location;
-        yield return app;
-        yield return typeof(ChaveFornecedor).Assembly.Location;
-        yield return typeof(ECDsa).Assembly.Location;
-        yield return typeof(object).Assembly.Location;
-        yield return Environment.ProcessPath ?? "";
-        yield return Path.ChangeExtension(app, ".deps.json");
-        yield return Path.ChangeExtension(app, ".runtimeconfig.json");
-    }
 }

@@ -83,6 +83,21 @@ Legendas:
   AOT). F2.1 (debugger) e F2.3 (editar memória) são medidas na mão, sem teste automático: o red
   registrou que F2.3 nem tem alvo na v2 (não há flag persistente), o que a v3 torna explícito com o
   estado redundante.
+- **Desenho da v4 (11/11/2026).** A v4 publica o app em Native AOT (desenho em
+  `06-plano-iteracoes.md`, seção "Desenho da v4"): o `NeuroMock.exe` vira nativo, sem IL nem
+  metadados gerenciados, e somem os assemblies gerenciados (`NeuroMock.dll`, `NeuroMock.Core.dll`) e
+  os `.json` do runtime. Com isso, os ataques do red que reescrevem IL (F1.1, F1.2, F1.3) ou
+  injetam hook em IL/JIT (F2.2) e o oráculo por reflexão (H1.2, H2.2) perdem o alvo gerenciado: a
+  reescrita teria de ser em código nativo. **H1.1 e H2.1** (análise estática do algoritmo) ficam
+  mais caras, não fechadas; o custo entra no CSV. **H2.2 segue parcial**: o algoritmo roda no
+  cliente, só o servidor fecha. A guarda 2 da v2 passa a conferir o hash da imagem nativa
+  (`Environment.ProcessPath`); a guarda 1, o manifesto assinado e as respostas atrasadas seguem; o
+  Obfuscar sai (não há `Core.dll` a renomear). **F2.1** (debugger) e **F2.3** (editar memória)
+  seguem abertas e medidas na mão: o atacante controla a máquina. O harness ganhou um guarda
+  (`CopiaDoAlvo.EhNativo`, adicionado pelo blue após os ataques do red à v3, issues #36/#38):
+  contra o nativo as folhas em IL (F1.x, H1.2) contam como neutralizadas e as do algoritmo (H1.1,
+  H2.1, H2.2) pulam (medidas na mão). A coluna v4 é preenchida quando o red atacar a v4 nativa; até
+  lá fica `?`.
 
 > As colunas de CWE/ASPIRE/MASVS continuam sujeitas a revisão ao implementar cada controle. O
 > objetivo é que nenhuma escolha fique sem fundamentação.

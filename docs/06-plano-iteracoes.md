@@ -131,6 +131,58 @@ Decisões que acompanham o desenho:
   e de manter o ataque, não uma barreira. F2.1 e F2.3 podem ser medidas na mão (debugger e
   edição de memória são difíceis de automatizar na esteira).
 
+## Desenho da v4 (Native AOT)
+
+Com o binário conferido (v2) e a execução encarecida (v3), o que ainda viaja no cliente é o IL
+gerenciado: o App e o Core descompilam quase em fonte, e os ataques das árvores 1 e 2 que
+reescrevem ou leem esse IL (patch do `if`, stub do verificador, hook, dump de parâmetros, leitura
+do algoritmo) continuam com alvo. A v4 publica o app em Native AOT: o `dotnet publish -r win-x64`
+compila todo o código gerenciado (App, Core, Avalonia, runtime) para um único executável nativo,
+sem IL nem metadados gerenciados. O que sobra no pacote é o `NeuroMock.exe` nativo e as bibliotecas
+nativas do Avalonia (Skia, HarfBuzz, ANGLE); somem o `NeuroMock.dll`, o `NeuroMock.Core.dll`, o
+`deps.json` e o `runtimeconfig.json`.
+
+| Peça | Como funciona | O que encarece |
+|---|---|---|
+| Publicação Native AOT | `PublishAot` no csproj do App e `IsAotCompatible` no Core. O publish win-x64 gera o executável nativo. As ligações compiladas do Avalonia (`AvaloniaUseCompiledBindingsByDefault`) e o MVVM por geração de código (CommunityToolkit) já evitam reflexão, então o AOT compila e roda sem configuração extra de trimming. | Ler ou reescrever o algoritmo e a licença deixa de ser abrir um assembly no dnSpy/ILSpy: não há IL nem metadados gerenciados. O atacante cai em engenharia reversa de código nativo (Ghidra/IDA), bem mais cara (H1.1, H2.1). |
+| IL de G1 e G2 sem alvo | Os ataques do red em IL (patch do salto do portão, NOP na validação, stub do verificador, hook por `DOTNET_STARTUP_HOOKS`/Harmony) dependem de um assembly gerenciado e de JIT. No executável nativo não há nenhum dos dois. | O ataque estático em IL (F1.1, F1.2, F1.3) e o hook em runtime (F2.2) perdem o alvo: a reescrita teria de ser em código nativo, sem as ferramentas de .NET. |
+| Guarda 2 adaptada à imagem única | A guarda 2 da v2 conferia os arquivos de onde o código foi carregado (App, Core, cripto, runtime, `deps.json`, `runtimeconfig.json`). No AOT esses arquivos não existem: todo o código em execução está no `NeuroMock.exe`. A guarda passa a conferir o hash da imagem nativa em execução (`Environment.ProcessPath`) contra o manifesto, com a cópia da chave que mora no App. | Conferir a imagem nativa cobre de uma vez o que antes eram vários assemblies. Falha fechada mantida: sem o caminho da imagem ou com hash divergente, conta como adulteração. |
+| Ofuscação subsumida | A renomeação do Obfuscar (v3) operava no `NeuroMock.Core.dll`, que não existe mais. O passo sai da esteira; o AOT remove nomes e constantes do IL de vez e cobre a lacuna de fluxo de controle que a v3 registrou (o código nativo não traz o fluxo em IL). | A legibilidade que a v3 reduzia por renomeação, a v4 remove por construção: não há símbolos gerenciados a ler. |
+
+Decisões que acompanham o desenho:
+
+- **A integridade e a licença seguem no cliente.** O AOT não move nada para fora: é endurecimento,
+  não barreira. Anti-debug (F2.1), estado redundante (F2.3), reverificação da licença e as duas
+  respostas atrasadas continuam, agora dentro do nativo. O anti-hook por detour em IL (F2.2) fica
+  sem alvo (Harmony e `DOTNET_STARTUP_HOOKS` não se aplicam ao nativo): a detecção vira inerte em
+  AOT, de propósito, porque o próprio AOT é o controle da folha.
+- **ILCompiler sem advisory, pelo SDK.** Ligar o `PublishAot` puxa o compilador AOT. A versão que
+  o SDK 10.0.401 traz (ILCompiler 10.0.12) tem o advisory alto GHSA-p3jp-9v83-76w9 (OOB no decoder
+  Brotli), que o gate de SCA barraria no restore. A correção é o SDK 10.0.403, cujo ILCompiler
+  10.0.14 está fora do advisory: o `global.json` passa a fixar o 10.0.403. Fixar o pacote
+  `Microsoft.DotNet.ILCompiler` por `PackageReference` não serve (quebra o AOT com
+  "PrivateSdkAssemblies is required"); a versão tem de vir do SDK.
+- **Link nativo precisa do MSVC.** O AOT win-x64 linka com o `link.exe` do MSVC, que o ILCompiler
+  localiza pelo `vswhere`. Na esteira (`windows-latest`) o `vswhere` já está no PATH. Localmente é
+  preciso o SDK 10.0.403 e o `vswhere` acessível (Developer Command Prompt, ou o diretório do
+  Installer do Visual Studio no PATH).
+- **Teto honesto: H2.2 não fecha.** O algoritmo ainda roda no cliente e os parâmetros ainda
+  materializam em memória. O AOT encarece muito reproduzir o algoritmo (sem IL, sem oráculo por
+  reflexão), mas quem faz a engenharia reversa do nativo ou dirige o executável como caixa preta
+  ainda reproduz a saída. H2.2 só fecha movendo o DSP para o servidor (recomendação arquitetural).
+  A matriz marca a v4 como parcial em H2.2.
+- **O harness ganhou um guarda nativo.** Os testes de regressão que reescrevem ou leem IL (T-F1.1,
+  T-F1.2, T-F1.3, T-H1.2) e o oráculo por reflexão (T-H2.2, mais os T-H1.1/T-H2.1 do red) abrem
+  assemblies gerenciados com dnlib/reflexão, que o pacote AOT não tem. Decidido na reunião red/blue
+  (a partir dos ataques do red à v3, issues #36/#38), o blue adicionou um guarda
+  (`CopiaDoAlvo.EhNativo`): contra o alvo nativo, as folhas em IL já fechadas (F1.x, H1.2) contam
+  como neutralizadas por construção (verde) e as folhas do algoritmo abertas (H1.1, H2.1, H2.2)
+  pulam (`Assert.Skip`, medidas na mão na RE do nativo). Os testes de caixa preta (controle
+  positivo, T-F3.x, T-F2.2) seguem sem mudança. Pela regra de ouro, o `estado-folhas.json` só muda
+  no fechamento do ciclo, com os testes do red.
+- **Só em Release.** Como v2 e v3, as guardas e respostas só existem em Release, e o AOT é da
+  publicação de Release. Em Debug o app roda em IL, para desenvolvimento.
+
 ## Calendário até a apresentação (24/11)
 
 A apresentação foi antecipada para ter 24/11. O time se encontra presencialmente às terças e
@@ -267,9 +319,10 @@ docs/iteracoes/vN.md
 ```
 
 O app espelha a arquitetura do produto real: .NET 10, Avalonia 11.3, CommunityToolkit.Mvvm,
-App e Core separados, publicação self-contained win-x64 sem single-file, sem ReadyToRun, sem
-trimming e sem PDB. O sensor é simulado com sinal sintético. O launcher fica de fora: nenhuma
-folha depende dele, e a release em zip cumpre o papel de canal de distribuição.
+App e Core separados, publicação self-contained win-x64 (até a v3 sem single-file, sem ReadyToRun,
+sem trimming e sem PDB; a v4 publica em Native AOT, um executável nativo, single-file e trimmed). O
+sensor é simulado com sinal sintético. O launcher fica de fora: nenhuma folha depende dele, e a
+release em zip cumpre o papel de canal de distribuição.
 
 A esteira (`.github/workflows/security.yml`) já procura `app/NeuroMock/NeuroMock.csproj` e
 `security-tests/run-all.ps1`. Enquanto eles não existirem, os jobs que dependem deles são

@@ -22,6 +22,14 @@ public sealed class T_F1_3
         ControlePositivo.Garantir();
 
         using var copia = Alvo.NovaCopia();
+        if (copia.EhNativo)
+        {
+            // v4 Native AOT: nao ha NeuroMock.Core.dll para trocar o corpo do verificador por um
+            // stub. Ataque neutralizado por construcao.
+            EstadoFolhas.Verificar("F1.3", ataqueFuncionou: false);
+            return;
+        }
+
         copia.RemoverLicenca();   // o pirata não tem licença; o stub torna isso irrelevante
 
         // Patch estático no NeuroMock.Core.dll: troca o corpo de

@@ -69,6 +69,18 @@ public sealed class CopiaDoAlvo : IDisposable
 
     public string Caminho(string relativo) => Path.Combine(Pasta, relativo);
 
+    /// <summary>
+    /// Verdadeiro quando o alvo e um build Native AOT (v4): o App e o Core viraram um unico
+    /// executavel nativo e nao ha assemblies gerenciados no pacote. Os ataques estaticos em
+    /// IL/reflexao (dnlib, Assembly.Load) perdem o alvo, entao cada teste desses consulta isto
+    /// primeiro. Folha fechada em IL (F1.x, H1.2): sem alvo = ataque neutralizado, verifica como
+    /// falho (verde). Folha aberta do algoritmo (H1.1, H2.1, H2.2): a decompilacao gerenciada
+    /// sumiu, mas a folha segue aberta por engenharia reversa do nativo (medida na mao), entao o
+    /// teste pula.
+    /// </summary>
+    public bool EhNativo =>
+        !File.Exists(Caminho("NeuroMock.Core.dll")) && !File.Exists(Caminho("NeuroMock.dll"));
+
     public void InstalarLicenca(string conteudoJson) =>
         File.WriteAllText(Caminho(Alvo.ArquivoLicenca), conteudoJson);
 

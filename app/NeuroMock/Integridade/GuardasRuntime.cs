@@ -79,6 +79,13 @@ internal static class GuardasRuntime
         if (FrameworkDeHookCarregado())
             return true;
 
+        // Em Native AOT (v4) não há JIT nem precode: Harmony e MonoMod reescrevem IL/JIT e não se
+        // aplicam, e DOTNET_STARTUP_HOOKS não é honrado pelo executável nativo. O detour em IL que
+        // a F2.2 pegava deixa de ter alvo (neutralizado por construção). O passeio pelo prólogo só
+        // faz sentido com código dinâmico (JIT), então fora dele não acusa.
+        if (!RuntimeFeature.IsDynamicCodeSupported)
+            return false;
+
         try
         {
             return ResolverPrologo() is { } prologo && ComecaComSalto(prologo);

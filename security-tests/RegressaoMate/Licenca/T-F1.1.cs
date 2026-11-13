@@ -28,6 +28,14 @@ public sealed class T_F1_1
         ControlePositivo.Garantir();
 
         using var copia = Alvo.NovaCopia();
+        if (copia.EhNativo)
+        {
+            // v4 Native AOT: o patch no IL de AssinaturaConfere nao tem assembly gerenciado para
+            // reescrever. Ataque neutralizado por construcao (o AOT tirou o IL de cena).
+            EstadoFolhas.Verificar("F1.1", ataqueFuncionou: false);
+            return;
+        }
+
         var maquina = copia.ObterCodigoDaMaquina();
 
         // mesma adulteração em claro do T-F3.3 (v1): máquina desta máquina e validade no futuro.

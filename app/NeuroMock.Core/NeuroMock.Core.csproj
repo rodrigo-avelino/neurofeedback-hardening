@@ -7,4 +7,11 @@
        (H1.2) eles saem do pacote e são decodificados em runtime de um bloco mascarado em
        ParametrosProcessamento: não há mais recurso em claro para embutir. -->
 
+  <!-- v4: o Core entra no executável nativo (Native AOT) junto com o App. IsAotCompatible liga os
+       analisadores de AOT/trimming aqui para flagrar qualquer reflexão incompatível; o Core é
+       cálculo e criptografia puros (ECDSA, SHA, registro), sem reflexão, então fica limpo. -->
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
 </Project>

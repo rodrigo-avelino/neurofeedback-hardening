@@ -21,6 +21,14 @@ public sealed class T_H1_2
         ControlePositivo.Garantir();
 
         using var copia = Alvo.NovaCopia();
+        if (copia.EhNativo)
+        {
+            // v4 Native AOT: nao ha NeuroMock.Core.dll para abrir e ler o recurso embutido. A folha
+            // ja estava fechada na v3 (parametros fora de arquivo em claro); o AOT reforca.
+            EstadoFolhas.Verificar("H1.2", ataqueFuncionou: false);
+            return;
+        }
+
         var vazou = ParametrosVazaram(copia.Caminho("NeuroMock.Core.dll"));
 
         EstadoFolhas.Verificar("H1.2", ataqueFuncionou: vazou);

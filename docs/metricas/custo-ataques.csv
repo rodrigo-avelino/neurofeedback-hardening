@@ -15,3 +15,6 @@ data,build,folha,modo,atacante,ferramentas,minutos,resultado,evidencia
 2026-11-10,v2,H2.2,preta,Guilherme,dnSpyEx + dotnet-SDK + IA,7,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/32
 2026-11-10,v2,F2.3,preta,Guilherme,dnSpyEx + dnlib,4,falha,LicencaValida chamada so uma vez no startup (unico caller App.OnFrameworkInitializationCompleted); sem flag persistente nem revalidacao; editor de memoria sem alvo
 2026-11-12,v3,H1.1,preta,Guilherme,dnSpyEx + dnlib + IA,6,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/38
+2026-11-12,v3,H2.1,preta,Guilherme,dnSpyEx + dnlib + IA,5,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/36
+2026-11-12,v3,F2.1,preta,Guilherme,dnSpyEx,6,falha,bypass por Set Next Statement abre o treino sob o debugger, mas o anti-debug da v3 detecta o dnSpy e fecha a janela sozinha em ~5s (harness exige ~30s aberto)
+2026-11-12,v3,F2.3,preta,Guilherme,dnSpyEx,7,falha,editar flag de LicencaValida para true em runtime (sem patch no IL) abre o treino, mas a reverificacao do EstadoLicenca redundante e/ou o anti-debug fecham a janela em ~6s; nao da para isolar qual defesa derrubou
