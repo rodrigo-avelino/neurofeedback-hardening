@@ -20,3 +20,4 @@ data,build,folha,modo,atacante,ferramentas,minutos,resultado,evidencia
 2026-11-12,v3,F2.3,preta,Guilherme,dnSpyEx,7,falha,editar flag de LicencaValida para true em runtime (sem patch no IL) abre o treino, mas a reverificacao do EstadoLicenca redundante e/ou o anti-debug fecham a janela em ~6s; nao da para isolar qual defesa derrubou
 2026-11-15,v4,H2.1,preta,Guilherme,PowerShell (strings),7,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/44
 2026-11-15,v4,H1.1,preta,Guilherme,Ghidra 12.2 + IA,10,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/46
+2026-11-15,v4,H2.2,preta,Guilherme,Ghidra + reimplementacao,5,sucesso,reimplementacao ReimplH22 reproduz o pipeline; equivalencia confirmada campo a campo pela reconstrucao da H1.1 (issue #46); oraculo por reflexao pula no nativo (guarda EhNativo)
