@@ -9,6 +9,9 @@ data,build,folha,modo,atacante,ferramentas,minutos,resultado,evidencia
 2026-11-10,v2,F1.1,preta,Victor Targino,esteira + IA,15,falha,integridade da v2 pega o patch: janela abre em ~2s e o app se encerra sozinho em ~12s (exit 0)
 2026-11-10,v2,F1.2,preta,Victor Targino,esteira + IA,3,falha,mesmo efeito: NOP no portao abre a janela mas a integridade encerra o processo
 2026-11-10,v2,F1.3,preta,Victor Targino,esteira + IA,3,falha,mesmo efeito: stub abre a janela mas a integridade encerra o processo
+2026-11-13,v4,F1.1,preta,Victor Targino,dnSpy/dnlib sem alvo + strings/PE (python),10,falha,Native AOT: sem IL e sem NeuroMock.dll pra editar; LicencaValida/AssinaturaConfere ainda vazam como string mas o patch no IL da v1 nao se aplica
+2026-11-13,v4,F1.2,preta,Victor Targino,strings/PE (python) + PowerShell + IA,30,falha,patch de 1 byte no NeuroMock.exe muda o sha256 (31a2e0.. -> c00f94..) e nao bate com o manifesto assinado; a guarda 2 confere ProcessPath contra o manifesto e sem a chave nao da pra reassinar; sem Ghidra/IDA no timebox pra achar o salto nativo
+2026-11-13,v4,F1.3,preta,Victor Targino,dnSpy/dnlib sem alvo + strings/PE (python),5,falha,sem metodo gerenciado pra trocar por stub no AOT; mesma parede da integridade assinada do F1.2
 2026-11-10,v2,F2.1,preta,Guilherme,dnSpyEx + IA,10,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/26
 2026-11-10,v2,F2.2,preta,Guilherme,Harmony + dnSpyEx + IA,3,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/27
 2026-11-10,v2,H1.2,preta,Guilherme,dnSpyEx + dnlib + IA,5,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/30
@@ -18,3 +21,6 @@ data,build,folha,modo,atacante,ferramentas,minutos,resultado,evidencia
 2026-11-12,v3,H2.1,preta,Guilherme,dnSpyEx + dnlib + IA,5,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/36
 2026-11-12,v3,F2.1,preta,Guilherme,dnSpyEx,6,falha,bypass por Set Next Statement abre o treino sob o debugger, mas o anti-debug da v3 detecta o dnSpy e fecha a janela sozinha em ~5s (harness exige ~30s aberto)
 2026-11-12,v3,F2.3,preta,Guilherme,dnSpyEx,7,falha,editar flag de LicencaValida para true em runtime (sem patch no IL) abre o treino, mas a reverificacao do EstadoLicenca redundante e/ou o anti-debug fecham a janela em ~6s; nao da para isolar qual defesa derrubou
+2026-11-15,v4,H2.1,preta,Guilherme,PowerShell (strings),7,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/44
+2026-11-15,v4,H1.1,preta,Guilherme,Ghidra 12.2 + IA,10,sucesso,https://github.com/rodrigo-avelino/neurofeedback-hardening/issues/46
+2026-11-15,v4,H2.2,preta,Guilherme,Ghidra + reimplementacao,5,sucesso,reimplementacao ReimplH22 reproduz o pipeline; equivalencia confirmada campo a campo pela reconstrucao da H1.1 (issue #46); oraculo por reflexao pula no nativo (guarda EhNativo)
