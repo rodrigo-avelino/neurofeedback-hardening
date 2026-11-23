@@ -29,8 +29,8 @@ Alzir Bruno Falcão). Leia este arquivo antes de agir no repo.
 - Duas histórias (ver `docs/02-abuse-cases.md`):
   1. **Pirataria**: usar sem licença válida.
   2. **Roubo do algoritmo**: recuperar o pipeline de DSP a partir do binário.
-- Fora de escopo (decidido com o orientador Joel Sotero): dados de paciente (EEG de um sensor
-  isolado tem baixo valor) e ataques de rede (software local).
+- Fora de escopo (decidido com o orientador, prof. José Alzir Bruno Falcão): dados de paciente
+  (EEG de um sensor isolado tem baixo valor) e ataques de rede (software local).
 
 ## Decisões já tomadas
 
