@@ -1,0 +1,40 @@
+\section{Casos de abuso: as histórias do atacante}
+\label{sec:abuso}
+
+O segundo artefato (\texttt{docs/02-abuse-cases.md}) transforma o resultado do STRIDE em histórias do atacante. Casos de abuso descrevem o comportamento do sistema sob um ator malicioso, o oposto das histórias de usuário \parencite{sindre2005,mcgraw2006}: cada ator mau recebe um objetivo e os caminhos que gostaria de percorrer, e as mitigações viram requisitos de segurança que alimentam a árvore de ataque e a suíte de testes. É a prática de casos de abuso e de requisitos de segurança dos Touchpoints \parencite{mcgraw2006}.
+
+\subsection{AC-1: pirataria}
+
+\begin{quote}
+\textbf{Como} clínica pirata, \textbf{quero} executar o software sem uma licença válida, \textbf{para} não pagar pelo produto.
+\end{quote}
+
+\begin{itemize}
+\item \textbf{Ator}: clínica pirata, com motivação econômica e habilidade baixa a média.
+\item \textbf{Ativo alvo}: a verificação de licença.
+\item \textbf{Gatilho}: o aplicativo roda localmente, então todo o mecanismo de licença está na mão do atacante.
+\item \textbf{Caminhos desejados}: adulterar o binário para pular a verificação (patch no IL, anulação do salto condicional); manipular a verificação em tempo de execução (depurador, hook, edição de memória); forjar ou reusar o artefato de licença (copiar de outra máquina, keygen, editar em claro); contornar uma ativação online, se adotada (emular o servidor, replay); derrotar uma hardkey, se adotada (emular ou clonar o dongle).
+\item \textbf{Requisito de segurança derivado}: o aplicativo deve recusar execução sem licença válida, e a verificação deve resistir a adulteração estática e dinâmica dentro do custo-alvo.
+\item \textbf{Critério de aceite}: rodar o aplicativo com cada técnica acima deve resultar em recusa de execução, verificada pela suíte de regressão.
+\end{itemize}
+
+\subsection{AC-2: roubo do algoritmo proprietário}
+
+\begin{quote}
+\textbf{Como} concorrente, \textbf{quero} recuperar o pipeline proprietário de processamento de sinal a partir do binário, \textbf{para} replicá-lo no meu produto.
+\end{quote}
+
+\begin{itemize}
+\item \textbf{Ator}: concorrente, com habilidade alta.
+\item \textbf{Ativo alvo}: o algoritmo de processamento de sinal, substituído no repositório por um stub.
+\item \textbf{Gatilho}: um binário .NET descompila com facilidade, porque o IL é quase legível como código-fonte.
+\item \textbf{Caminhos desejados}: descompilar o assembly e ler o algoritmo diretamente; localizar o módulo do algoritmo e compreendê-lo, um nó AND em que é preciso localizar e compreender; extrair pesos e parâmetros de configuração.
+\item \textbf{Requisito de segurança derivado}: elevar o custo de localizar e compreender o algoritmo e, como recomendação arquitetural, avaliar mover o núcleo sensível para fora do cliente.
+\item \textbf{Critério de aceite}: medir o tempo que o red team leva para extrair o algoritmo a cada iteração. A meta é a curva de custo subir.
+\end{itemize}
+
+O próprio caso de abuso registra uma nota honesta, escrita antes de qualquer build: a única mitigação que de fato derrota o MATE aqui é não enviar o segredo, movendo o pipeline para um servidor. Mantendo tudo local, ofuscação e compilação nativa são endurecimento parcial, não solução. A nota não é uma falha do trabalho, e sim um achado; as iterações a confirmaram com números (Seção~\ref{sec:resultados}).
+
+\subsection{Casos fora de escopo}
+
+Ficaram registrados para rastreabilidade, mas fora do escopo acordado, o vazamento de dados de paciente, de baixo valor neste cenário, e os ataques de rede, porque o software é local.

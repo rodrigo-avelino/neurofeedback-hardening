@@ -1,0 +1,39 @@
+\section{Discussão}
+\label{sec:discussao}
+
+\subsection{O que as cinco builds mostram}
+
+O resultado se resume em uma frase: dá para tornar a pirataria cara demais para valer a pena; o algoritmo dá para encarecer, mas não para esconder. As duas metades merecem ser lidas com cuidado.
+
+Na pirataria, o endurecimento do cliente funcionou. A licença assinada fechou a fraude no arquivo, a integridade fechou o patch estático, os controles de execução fecharam a manipulação em runtime, e a compilação nativa tirou de cena o IL em que os patches se apoiavam. Na v3 e na v4, nenhum caminho conhecido funcionou, e o atacante gastou até 45 minutos sem sucesso numa só build.
+
+No algoritmo, uma folha aberta não quer dizer que os controles foram inúteis. O custo dobrou, e o atacante precisou trocar de ferramenta e de habilidade. Com mais ciclos, o custo subiria mais: o próximo controle no cliente atacaria o metadado de tipos que ainda vaza como texto no executável nativo e o fluxo do código compilado. Mas há um teto, e ele é estrutural: enquanto o algoritmo executar na máquina do atacante, ele está lá para ser lido, e a matriz o registra como CWE-656, segurança por obscuridade.
+
+\subsection{Por que as duas histórias divergem}
+
+A diferença entre as histórias não é de esforço do blue; é de princípio. A licença segue o projeto aberto de \textcite{saltzer1975}: o mecanismo é público, e a segurança depende de um segredo que nunca chega ao cliente, a chave privada do fornecedor. Conhecer todo o código da verificação não permite forjar uma licença, e a integridade assinada impede trocar o código que verifica. O algoritmo, ao contrário, é o próprio segredo, e precisa estar no cliente para executar. Toda proteção dele é, no fim, obscuridade: aumenta o custo de entender, não remove o que há para entender. Por isso a única mitigação que derrota o MATE na árvore 2 é arquitetural: mover o processamento de sinal para um servidor, de modo que o cliente deixe de conter o segredo.
+
+A ordem das builds também mostrou o comportamento esperado de um atacante racional, que sempre escolhe o caminho mais barato que sobrou. Com a licença forte (v1), ele não atacou a criptografia: patcheou o binário em 5 minutos. Com o binário conferido (v2), foi para a execução em 3 minutos. Cada controle precisou mirar não a folha mais interessante, mas a mais barata, o que valida a escolha de medir custo em vez de declarar o software seguro ou inseguro.
+
+\subsection{A IA nos dois lados}
+
+A inteligência artificial apareceu dos dois lados do exercício. Na defesa, o blue usou um assistente de IA de programação (Claude Code) para implementar controles, testes e a esteira, o que ajudou a manter o ritmo de cinco builds em dez dias; a esteira e o controle positivo conferiram cada mudança, inclusive as que a IA ajudou a escrever. No ataque, 14 das 25 tentativas tiveram apoio de IA, e o caso mais forte foi a reconstrução do pipeline a partir do executável nativo, com o Ghidra e IA, em 10 minutos.
+
+Daí sai uma lição sobre até onde as tecnologias disruptivas ajudam a proteção. A IA não quebrou a assinatura ECDSA nem o manifesto assinado: o que depende de matemática e de segredo fora do cliente resistiu. Mas ela encurtou muito a leitura de código, mesmo sem IL e sem nomes. Contra um atacante com IA, esconder código compra menos tempo do que comprava; o que resiste é o que não depende de esconder. E, do lado da defesa, gerar um controle ficou fácil; provar que ele funciona e que não volta a quebrar continua exigindo o ciclo de ataque, teste e medição.
+
+\subsection{O processo como modelo reutilizável}
+
+A contribuição mais durável do trabalho é o processo, não o aplicativo endurecido. Nada nos artefatos de processo depende de neurofeedback: o mesmo ciclo serve para qualquer software que execute em território hostil. Para reutilizá-lo, a sequência é a que este relatório percorreu:
+\begin{enumerate}
+\item modelar as ameaças sobre o fluxo de dados e escolher as histórias pelo risco;
+\item escrever os casos de abuso e desdobrá-los em árvores de ataque;
+\item montar a suíte com estado declarado por folha, controle positivo e observação de fora, e a esteira em duas camadas;
+\item entregar uma build 0 sem controles e medir o ponto de partida;
+\item iterar com o red em caixa preta, registrando toda tentativa, até o custo de fechar o que sobra passar do valor de fechá-lo;
+\item manter a matriz de rastreabilidade e uma nota por build.
+\end{enumerate}
+O repositório \parencite{repo} traz cada um desses artefatos pronto para ser copiado e adaptado, inclusive os modelos de issue de ataque e de pull request.
+
+\subsection{Ameaças à validade}
+
+A medição tem limites que precisam ser assumidos. A amostra é pequena: dois atacantes e 25 tentativas, somando 231 minutos. O tempo é autodeclarado, e as tentativas que falharam pararam antes do timebox de 2 horas, de modo que os limites inferiores de custo são conservadores. O stub de DSP é mais simples que o algoritmo real, então entender o algoritmo real custaria mais. A IA, usada em 14 das 25 tentativas, aproxima o custo medido do de um atacante atual, mas também o torna mais variável. Os atacantes conheciam a arquitetura do projeto, mesmo atacando em caixa preta, porque participaram da modelagem. E foram cinco ciclos em dez dias: com mais iterações, o custo subiria mais, e o teto de cada controle seria mais bem explorado.

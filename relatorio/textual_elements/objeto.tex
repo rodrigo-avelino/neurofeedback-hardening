@@ -1,0 +1,38 @@
+\section{O objeto: o aplicativo e o mock}
+\label{sec:objeto}
+
+\subsection{O aplicativo real}
+
+O produto real é um aplicativo de desktop para Windows, em Avalonia~11.3 sobre .NET~10, organizado em MVVM com o CommunityToolkit.Mvvm. A leitura de EEG vem de um sensor BrainBit Flex~4, conectado por Bluetooth Low Energy e acessado pelo SDK do fabricante (XNeuroSDK). Todo o processamento, do sinal bruto ao índice de feedback, acontece localmente, por um pipeline proprietário de processamento digital de sinais (DSP), que é o ativo de propriedade intelectual da empresa. O aplicativo é distribuído por instalador, sem atualização automática, e no início do trabalho não tinha verificação de licença robusta, verificação de integridade nem qualquer proteção do algoritmo. A hardkey de licença que aparece nas árvores de ataque pertence ao software legado da empresa; o aplicativo novo partiu do zero.
+
+\subsection{Por que um mock}
+
+O repositório é público, e o algoritmo real não pode ser exposto. Por isso o aplicativo atacado neste trabalho é um mock: uma aplicação figurada com a mesma arquitetura e as mesmas superfícies de ataque do produto real, mas com o núcleo de processamento de sinal substituído por um stub sem valor comercial. A escolha preserva o que importa para o trabalho, isto é, licença, integridade do binário, arquivos locais, execução e leitura do algoritmo, sem expor a propriedade intelectual. Quando o processo estiver validado, basta trocar o stub pelo módulo real num ambiente fechado da empresa, e os controles já vêm testados.
+
+Há um cuidado registrado no próprio repositório: o stub precisa ter complexidade parecida com a do real no ponto que a defesa protege. Para medir a ocultação de algoritmo, um \texttt{return input} não serviria, porque a conclusão não se transferiria ao produto. O stub implementa um algoritmo de verdade, com filtros, transformada rápida de Fourier, índice por bandas e limiar adaptativo, e o sensor é simulado com sinal sintético.
+
+\subsection{Estrutura do mock}
+
+O código fica em \texttt{app/}, numa solução com quatro projetos e uma pasta de ferramentas, descrita no Quadro~\ref{qd:mock}. A mesma linha de versões do produto real foi mantida (Avalonia~11.3, CommunityToolkit.Mvvm~8.4 e xunit.v3~3.2), no patch mais recente de cada uma. Um \texttt{Directory.Build.props} fixa o que vale para todos os projetos: .NET~10, auditoria de pacotes no restore, em que uma vulnerabilidade moderada ou pior quebra o build, e build de Release sem PDB, como o pacote entregue à clínica.
+
+\begin{table}[htbp]
+\centering
+\caption{Estrutura do mock em \texttt{app/}.}
+\label{qd:mock}
+\small
+\begin{tabular}{L{4.2cm}L{10.4cm}}
+\toprule
+Projeto & Papel \\
+\midrule
+\texttt{NeuroMock} & App Avalonia (WinExe): barreira de licença, tela de treino, tela de ativação, guardas e respostas de integridade. \\
+\texttt{NeuroMock.Core} & Lógica pura, sem Avalonia: licenciamento, integridade (manifesto), processamento (stub de DSP), sensor (sinal sintético) e sessão (CSV local). \\
+\texttt{NeuroMock.Fornecedor} & Lado do fornecedor, fora do pacote: par de chaves, emissão de licença e assinatura do pacote. \\
+\texttt{NeuroMock.Tests} & Testes funcionais do Core, da emissão e do manifesto (xunit.v3). \\
+\texttt{ferramentas/} & Emissor de licença, assinador do pacote e, a partir da v3, o ofuscador do algoritmo. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Distribuição e reprodutibilidade}
+
+O canal de distribuição do mock é o zip win-x64 que a esteira publica em cada tag \texttt{v*}, acompanhado do SHA-256. É o único alvo válido para o red team, que confere o hash antes de atacar. O instalador do produto real ficou fora das iterações, porque nenhuma folha das árvores depende dele. A reprodutibilidade vem de versões fixadas: o \texttt{global.json} fixa o SDK e o \texttt{dotnet-tools.json}, as ferramentas, com as mesmas versões no devcontainer (Linux, para higiene e análise automatizada) e na esteira. O ataque exploratório acontece na máquina pessoal de cada atacante, fiel ao modelo MATE, e a regressão automatizada roda num runner Windows, a mesma plataforma do alvo.

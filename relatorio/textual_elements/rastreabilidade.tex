@@ -1,0 +1,63 @@
+\section{A matriz de rastreabilidade}
+\label{sec:rastreabilidade}
+
+A matriz (\texttt{docs/04-controls-traceability.md}) é o artefato que transforma \enquote{fizemos um pentest} em \enquote{seguimos um método}. Cada folha da árvore liga-se a um teste, a um controle do blue, à build em que o controle estava planejado, a uma fraqueza (CWE), a uma área do CyBOK, a uma linha de defesa do ASPIRE e a um controle MASVS-RESILIENCE, com o resultado empírico do red team por build. O Quadro~\ref{qd:matriz} traz o controle e a fundamentação de cada folha ativa.
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{1.0cm}L{1.5cm}L{5.0cm}L{1.6cm}L{2.5cm}L{2.2cm}}
+\caption{Matriz de rastreabilidade: controle e fundamentação de cada folha ativa.}\label{qd:matriz}\\
+\toprule
+Folha & Teste & Controle (blue) & CWE & ASPIRE & MASVS \\
+\midrule
+\endfirsthead
+\toprule
+Folha & Teste & Controle (blue) & CWE & ASPIRE & MASVS \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+F1.1 & T-F1.1 & integridade do binário: manifesto assinado, duas guardas, resposta atrasada e segunda cópia da chave pública (v2) & CWE-602 & anti-adulteração & RESILIENCE-2 \\
+F1.2 & T-F1.2 & integridade do binário (v2) & CWE-602 & anti-adulteração & RESILIENCE-2 \\
+F1.3 & T-F1.3 & integridade do binário (v2) & CWE-602 & anti-adulteração & RESILIENCE-2 \\
+F2.1 & na mão & anti-debug e checagem em runtime (v3) & CWE-602 & anti-adulteração & RESILIENCE-4 \\
+F2.2 & T-F2.2 & detecção de hook e integridade em runtime (v3) & CWE-602 & anti-adulteração & RESILIENCE-4 \\
+F2.3 & na mão & estado de licença sem flag única em memória e verificação redundante (v3) & CWE-642 & anti-adulteração & RESILIENCE-2 \\
+F3.1 & T-F3.1 & licença presa ao hardware (v1) & CWE-1390 & renovabilidade & n/a \\
+F3.2 & T-F3.2 & validação assimétrica: só a chave pública no cliente (v1) & CWE-321 & ocultação de dados & CRYPTO-2 \\
+F3.3 & T-F3.3 & licença assinada com ECDSA; cifrar não bastaria, porque a chave estaria no cliente (v1) & CWE-345 & ocultação de dados & CRYPTO-1 \\
+H1.1 & T-H1.1 & ofuscação e .NET Native AOT (v3 e v4) & CWE-540 & ocultação de algoritmo & RESILIENCE-3 \\
+H1.2 & T-H1.2 & parâmetros fora de arquivo em claro (v3) & CWE-312 & ocultação de dados & RESILIENCE-3 \\
+H2.1 & T-H2.1 & renomeação (v3) e Native AOT sem metadados gerenciados (v4) & CWE-540 & ocultação de algoritmo & RESILIENCE-3 \\
+H2.2 & T-H2.2 & ofuscação: renomeação na v3, código nativo na v4 & CWE-540 & ocultação de algoritmo & RESILIENCE-3 \\
+\end{longtable}
+}
+
+O Quadro~\ref{qd:estados} registra o estado de cada folha por build, igual ao declarado em \texttt{estado-folhas.json} na tag. A legenda distingue \textbf{A}, aberta e medida, em que o ataque teve sucesso; \textbf{A*}, aberta por expectativa, em que nenhum controle mirava a folha e o red ainda não a tinha medido; e \textbf{F}, fechada, em que o controle resiste ao ataque conhecido. O calendário levou o red, em cada ciclo, direto às folhas que a build seguinte fecharia: na v0 foram medidas F3.1 a F3.3; na v1, o ramo G1; na v2, F2.1, F2.2, H1.2 e H2.2, com F2.3 tentada sem alvo, porque a v2 não guarda flag de licença em memória.
+
+\begin{table}[htbp]
+\centering
+\caption{Estado das folhas ativas por build.}
+\label{qd:estados}
+\small
+\begin{tabular}{lccccc}
+\toprule
+Folha & v0 & v1 & v2 & v3 & v4 \\
+\midrule
+F1.1, F1.2 e F1.3 & A* & A & F & F & F \\
+F2.1 e F2.2 & A* & A* & A & F & F \\
+F2.3 & A* & A* & A* & F & F \\
+F3.1, F3.2 e F3.3 & A & F & F & F & F \\
+H1.1 & A* & A* & A* & A & A \\
+H1.2 & A* & A* & A & F & F \\
+H2.1 & A* & A* & A* & A & A \\
+H2.2 & A* & A* & A & A & A \\
+\midrule
+Folhas abertas, de 13 & 13 & 10 & 7 & 3 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As notas de mapeamento da matriz explicam as escolhas menos óbvias. A \textbf{CWE-602}, imposição no cliente de uma política de segurança, aparece em G1 e G2 porque a fraqueza raiz é uma só: a política de licença é imposta apenas no cliente, que o atacante controla. Muda a técnica, estática ou em execução, não a fraqueza; é também o que fundamenta a recomendação de mover o núcleo para um servidor. A \textbf{CWE-642}, controle externo de dados de estado críticos, cobre a flag de licenciado e o marcador de avaliação, guardados onde o atacante escreve. A \textbf{CWE-1390}, autenticação fraca, aparece em F3.1 porque uma licença que não está presa à máquina não prova que quem a usa é o licenciado. A \textbf{CWE-345}, verificação insuficiente da autenticidade dos dados, aparece em F3.3 porque o problema do arquivo de licença editável é autenticidade, não sigilo: por isso o controle é assinatura, e cifrar com uma chave embutida no cliente não resolveria. A \textbf{CWE-540}, inclusão de informação sensível no código, cobre a árvore 2, porque o algoritmo viaja dentro de um código que descompila quase em fonte; e o controle dela, a ofuscação, é ele mesmo a \textbf{CWE-656}, dependência de segurança por obscuridade, que é o teto honesto do MATE.
+
+Nas áreas do CyBOK, as folhas se distribuem entre Segurança de Software (G1, G2 e a árvore 2), Criptografia (F3.2 e F3.3) e Autenticação, Autorização e Responsabilização (F3.1 e F3.2). O MASVS é um padrão para aplicativos móveis, e a categoria RESILIENCE entra por analogia; o licenciamento não é coberto por ele, daí o n/a em F3.1. A matriz foi revista ao longo do projeto, e o histórico de revisões faz parte do artefato. Na revisão de 02/11, os identificadores MASVS foram corrigidos (anti-adulteração é RESILIENCE-2, e anti análise dinâmica, RESILIENCE-4), uma CWE que não descrevia a folha saiu de F2.1, CWEs genéricas deram lugar a CWEs específicas e entraram as folhas que estavam na árvore e faltavam na matriz. Em 19/11, a coluna v2 foi corrigida para registrar como medidas as quatro folhas que o red atacou com sucesso na v2.
