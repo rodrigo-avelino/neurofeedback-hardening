@@ -21,7 +21,8 @@ build.
 A coluna da build é preenchida no fechamento do ciclo. O custo de cada tentativa fica em
 `docs/metricas/custo-ataques.csv`. Na v0, o calendário levou o red direto às folhas que a v1
 fecha: só F3.1, F3.2 e F3.3 foram medidas; as outras ficaram `A*`. Na v1, do mesmo jeito, o red
-mediu o ramo G1 (F1.1, F1.2 e F1.3), que a v2 fecha.
+mediu o ramo G1 (F1.1, F1.2 e F1.3), que a v2 fecha. Na v2, o red mediu F2.1, F2.2, H1.2 e H2.2,
+as quatro com sucesso, e tentou F2.3 sem alvo; F2.3, H1.1 e H2.1 ficaram `A*` nessa coluna.
 
 ## Matriz
 
@@ -30,8 +31,8 @@ mediu o ramo G1 (F1.1, F1.2 e F1.3), que a v2 fecha.
 | F1.1 | T-F1.1 | integridade do binário: manifesto assinado do pacote, duas guardas e resposta atrasada; segunda cópia da chave pública | v2 | CWE-602 | Software Security; Secure SW Lifecycle | anti-tampering | RESILIENCE-2 | A* | A | F | F | F |
 | F1.2 | T-F1.2 | idem (integridade do binário) | v2 | CWE-602 | Software Security | anti-tampering | RESILIENCE-2 | A* | A | F | F | F |
 | F1.3 | T-F1.3 | idem | v2 | CWE-602 | Software Security | anti-tampering | RESILIENCE-2 | A* | A | F | F | F |
-| F2.1 | medida na mão | anti-debug + checagem em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A* | A* | A* | F | F |
-| F2.2 | T-F2.2 | detecção de hook + integridade em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A* | A* | A* | F | F |
+| F2.1 | medida na mão | anti-debug + checagem em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A* | A* | A | F | F |
+| F2.2 | T-F2.2 | detecção de hook + integridade em runtime | v3 | CWE-602 | Software Security | anti-tampering | RESILIENCE-4 | A* | A* | A | F | F |
 | F2.3 | medida na mão | estado de licença sem flag única em memória; verificação redundante | v3 | CWE-642 | Software Security | anti-tampering | RESILIENCE-2 | A* | A* | A* | F | F |
 | F3.1 | T-F3.1 | binding de licença ao hardware | v1 | CWE-1390 | AAA | renovabilidade | n/a | A | F | F | F | F |
 | F3.2 | T-F3.2 | validação assimétrica (só a chave pública no cliente) | v1 | CWE-321 | Cryptography; AAA | ocultação de dados | CRYPTO-2 | A | F | F | F | F |
@@ -40,9 +41,9 @@ mediu o ramo G1 (F1.1, F1.2 e F1.3), que a v2 fecha.
 | F4.x | T-F4.x | ativação online + atestação | hipótese | CWE-294 | Distributed Systems Security | atestação remota | n/a | - | - | - | - | - |
 | F5.x | T-F5.x | challenge-response com hardkey | hipótese | CWE-287 | Hardware Security; AAA | atestação remota | n/a | - | - | - | - | - |
 | H1.1 | T-H1.1 | ofuscação + .NET Native AOT | v4 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A* | A* | A* | A | A |
-| H1.2 | T-H1.2 | parâmetros fora de arquivo em claro; ofuscação de constantes | v3 | CWE-312 | Software Security | ocultação de dados | RESILIENCE-3 | A* | A* | A* | F | F |
+| H1.2 | T-H1.2 | parâmetros fora de arquivo em claro; ofuscação de constantes | v3 | CWE-312 | Software Security | ocultação de dados | RESILIENCE-3 | A* | A* | A | F | F |
 | H2.1 | T-H2.1 | renomeação (v3) + Native AOT sem metadados (v4) | v3, v4 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A* | A* | A* | A | A |
-| H2.2 | T-H2.2 | ofuscação (control-flow, renaming); só a renomeação na v3 | v3 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A* | A* | A* | A | A |
+| H2.2 | T-H2.2 | ofuscação (control-flow, renaming); só a renomeação na v3 | v3 | CWE-540 | Software Security | ocultação de algoritmo | RESILIENCE-3 | A* | A* | A | A | A |
 
 Legendas:
 
@@ -111,6 +112,10 @@ Legendas:
   tira o IL de cena, mas não fecha a árvore 2 no cliente. É o teto honesto da CWE-540/CWE-656, só o
   servidor fecha. F2.x e F3.x seguem fechadas (controles AOT-safe); H1.2 fechada (parâmetros
   mascarados). A v4 é a última build de controle; daqui é relatório e ensaio.
+- **Correção da coluna v2 (19/11/2026).** A coluna marcava F2.1, F2.2, H1.2 e H2.2 como `A*`, mas o
+  red mediu as quatro na v2, com sucesso, em 10/11 (`custo-ataques.csv`, issues #26, #27, #30 e #32):
+  passam a `A`. F2.3 segue `A*`: a tentativa na v2 falhou por falta de alvo (a v2 não guarda flag de
+  licença em memória), não por um controle.
 
 > As colunas de CWE/ASPIRE/MASVS continuam sujeitas a revisão ao implementar cada controle. O
 > objetivo é que nenhuma escolha fique sem fundamentação.
