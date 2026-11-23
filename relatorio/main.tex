@@ -1,0 +1,83 @@
+% =====================================================================
+%  RELATORIO TECNICO - CADEIRA DE SEGURANCA NO CIBERESPACO / UNIFOR
+%  Endurecimento iterativo de um app de neurofeedback contra MATE
+%  Estrutura modular: cada secao em textual_elements/.
+%  Compila no Overleaf (pdfLaTeX + biber).
+% =====================================================================
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage[a4paper,left=3cm,top=3cm,right=2cm,bottom=2cm]{geometry}
+\usepackage{setspace}
+\usepackage{indentfirst}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,decorations.pathreplacing,positioning,fit}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{booktabs}
+\usepackage{longtable}   % matriz e registro de custo (quebram entre paginas)
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{caption}
+\captionsetup[table]{name=Quadro}
+\usepackage{csquotes}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{pdfpages}
+\hypersetup{hidelinks}
+
+\usepackage[style=abnt,backend=biber]{biblatex}
+\addbibresource{references.bib}
+
+\graphicspath{{figuras/}}
+
+% --- Cores da apresentacao: azul = a defesa segurou; laranja = o ataque funcionou ---
+\definecolor{azul}{HTML}{2F6FDB}
+\definecolor{laranja}{HTML}{D66B22}
+\definecolor{laranjaclaro}{HTML}{EDB487}
+
+% --- Espacamento e paragrafo no padrao ABNT ---
+\onehalfspacing
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+
+% --- Titulos de secao em caixa alta e negrito (estilo ABNT) ---
+\titleformat{\section}{\normalfont\bfseries}{\thesection}{1em}{\MakeUppercase}
+\titleformat{\subsection}{\normalfont\bfseries}{\thesubsection}{1em}{\MakeUppercase}
+\titleformat{\subsubsection}{\normalfont\bfseries}{\thesubsubsection}{1em}{}
+
+% --- Coluna de largura fixa com quebra de linha ---
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+
+\begin{document}
+
+\input{textual_elements/cover}
+
+\newpage
+\tableofcontents
+\newpage
+
+\input{textual_elements/introduction}
+\input{textual_elements/fundamentacao}
+\input{textual_elements/objeto}
+\input{textual_elements/ameacas}
+\input{textual_elements/abuso}
+\input{textual_elements/arvores}
+\input{textual_elements/processo}
+\input{textual_elements/rastreabilidade}
+\input{textual_elements/iteracoes}
+\input{textual_elements/resultados}
+\input{textual_elements/discussao}
+\input{textual_elements/conclusion}
+\input{textual_elements/references}
+
+\appendix
+\input{textual_elements/apendice_custos}
+
+\end{document}

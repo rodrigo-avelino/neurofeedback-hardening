@@ -1,0 +1,16 @@
+\section{Conclusão}
+\label{sec:conclusao}
+
+O trabalho partiu de uma pergunta: dá para proteger um software que executa inteiramente na máquina de quem quer atacá-lo? Ao longo de cinco builds, com um time construindo controles e outro atacando em caixa preta, a resposta medida foi dupla. A pirataria pôde ser tornada cara demais para valer a pena: o ataque mais barato foi de 5 minutos a nenhum caminho conhecido. O roubo do algoritmo pôde ser encarecido, com o custo dobrando, mas não impedido, porque o algoritmo executa no cliente.
+
+A contribuição principal não é o aplicativo endurecido, que seria impossível de blindar em definitivo no cenário MATE, e sim um processo replicável, documentado e medido, apoiado na área de Ciclo de Vida de Desenvolvimento Seguro do CyBOK. Cada ataque virou teste, cada decisão foi rastreada a uma fraqueza, a uma área do CyBOK e às referências do estado da arte, e cada tentativa teve o custo registrado. O repositório reúne esses artefatos e pode ser reutilizado em outros cenários em que o software roda em território hostil.
+
+Para o produto real, ficam as recomendações:
+\begin{itemize}
+\item \textbf{Mover o processamento de sinal para um servidor}, para que o cliente deixe de conter o segredo. É a única mitigação que fecha a árvore 2, e acorda o ramo G4, de ataques à ativação, que passa a ser alvo testável.
+\item \textbf{Adotar ativação online}, com licença anual, limite de ativações por cliente e troca de máquina feita pelo próprio cliente, o que resolve a reativação manual da v1 e pode tirar a chave privada da esteira.
+\item \textbf{Garantir renovabilidade}: versão no formato da licença e fim do suporte às versões antigas, já que, sem atualização automática, uma versão antiga e patchável continua circulando.
+\item \textbf{Separar as chaves} que assinam o pacote e as que emitem licenças, e guardá-las fora da esteira ou num ambiente com aprovação manual.
+\end{itemize}
+
+Como próximos passos do processo, o ciclo seguinte no cliente atacaria o metadado de tipos que ainda vaza no executável nativo e o fluxo do código compilado, e a hipótese de mover o algoritmo para o servidor seria medida numa branch própria, como o processo prevê. O diagrama de fluxo de dados também deve ser atualizado com o canal local de integração com jogos. O ciclo continua aberto, como deve ser: aqui, segurança é um processo contínuo, não uma proteção absoluta.

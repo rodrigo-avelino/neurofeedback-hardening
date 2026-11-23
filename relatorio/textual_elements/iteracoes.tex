@@ -1,0 +1,197 @@
+\section{As cinco iterações}
+\label{sec:iteracoes}
+
+As notas de iteração (\texttt{docs/iteracoes/v0.md} a \texttt{v4.md}) e as seções de desenho do plano registram cada build do mesmo jeito: o que entrou, o que o red achou, o estado das folhas e as decisões para a build seguinte. A ordem das builds seguiu a lógica de custo do ASPIRE: cada build fecha o caminho mais barato que sobrou na anterior. Essa ordem era uma hipótese, não um contrato: se o red achasse um caminho mais barato, a build seguinte mudaria de alvo. O Quadro~\ref{qd:builds} resume a sequência, e as tabelas de cada build trazem as tentativas do registro de custo, com a referência à issue ou ao pull request de evidência.
+
+\begin{table}[htbp]
+\centering
+\caption{A sequência de builds.}
+\label{qd:builds}
+\small
+\begin{tabular}{L{1.0cm}L{1.6cm}L{7.8cm}L{3.6cm}}
+\toprule
+Build & Entregue & Controle principal & Alvo na árvore \\
+\midrule
+v0 & 03/11 & nenhum, de propósito (linha de base) & medir o ponto de partida \\
+v1 & 05/11 & licença assinada com ECDSA P-256 e presa à máquina & G3 \\
+v2 & 09/11 & integridade do binário: manifesto assinado, duas guardas e resposta atrasada & G1 \\
+v3 & 11/11 & anti-debug, anti-hook, estado redundante, parâmetros mascarados e renomeação do algoritmo & G2, H1.2 e H2.2 \\
+v4 & 13/11 & .NET Native AOT & H1.1, H2.1 e os ataques em IL \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{v0: a linha de base}
+
+\begin{itemize}[noitemsep]
+\item Tag \texttt{v0} (commit \texttt{918e38b}), entregue em 03/11/2026; período de ataque de 03/11 a 05/11.
+\item Zip \texttt{neuromock-v0-win-x64.zip}, SHA-256:\\ \texttt{\footnotesize 6ff63c27502dc03180fa800ba99a3c1bd5c2dfa9e04b75949b08cd5fc541bc08}
+\end{itemize}
+
+A v0 não tinha nenhum controle de segurança, de propósito. Ela reproduzia a arquitetura e o empacotamento do produto real, com Avalonia~11.3, App e Core separados e publicação self-contained win-x64, sem single-file, sem ReadyToRun, sem trimming e sem PDB. A licença ficava num JSON sem assinatura, sem amarração à máquina e sem verificação de integridade; o stub de DSP era um algoritmo de verdade, em IL sem ofuscação. A build já trazia o harness da regressão com o controle positivo, que passou na esteira da tag, mas nenhum teste de ataque: o red escreveria os primeiros depois da tentativa em caixa preta.
+
+\begin{table}[htbp]
+\centering
+\caption{O que o red achou na v0.}
+\label{qd:v0}
+\small
+\begin{tabular}{L{1.2cm}L{10.2cm}L{1.2cm}L{1.2cm}}
+\toprule
+Folha & Resultado & Min. & Ref. \\
+\midrule
+F3.1 & sucesso: a licença de outra máquina abriu o app sem alteração & 5 & \#8 \\
+F3.3 & falha: trocar o nome do cliente quebra a chave & 10 & \#10 \\
+F3.3 & sucesso: editar só a validade passa & 5 & \#10 \\
+F3.2 & sucesso: keygen reimplementado a partir do ILSpy & 40 & \#12 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Os testes T-F3.1, T-F3.2 e T-F3.3 passaram na esteira contra a v0 com as folhas declaradas abertas: o buraco ficou documentado. Na v0 foram medidas 3 das 13 folhas ativas, todas abertas; as outras 10 ficaram abertas por expectativa. Para a v1, o blue somou duas variantes dos testes do red, T-F3.2 e T-F3.3 na forma da v1, porque os originais montavam a licença no formato da v0, que a v1 recusaria só pelo formato, e não pegariam uma regressão da assinatura. Ficaram os dois pares: os do red garantem que o ataque da v0 continua morto, e os novos atacam o controle da v1. O teste de regressão evolui junto com o controle.
+
+\subsection{v1: a licença assinada}
+
+\begin{itemize}[noitemsep]
+\item Tag \texttt{v1} (commit \texttt{05bb6a5}), entregue em 05/11/2026; período de ataque de 05/11 a 10/11.
+\item Zip \texttt{neuromock-v1-win-x64.zip}, SHA-256:\\ \texttt{\footnotesize 220f6d54d0730752605306b0768a1f892948cdaed370ce3ba91297e4658c7bf3}
+\end{itemize}
+
+A v1 mirou o ramo G3. A licença passou a carregar o cliente, a validade e o código da máquina, um hash de um identificador do sistema, assinados pelo fornecedor com ECDSA P-256. O cliente só tem a chave pública, embutida no código. Sem licença, a tela de ativação mostra o código da máquina e grava um arquivo de solicitação de ativação, que o cliente envia ao fornecedor para receber a licença assinada para aquela máquina. A emissão fica num projeto do fornecedor que não vai no pacote, e a chave privada fica fora do repositório e, na esteira, num segredo. O controle positivo passou a emitir a licença na hora para a máquina do runner. A integridade do binário ficou de fora, de propósito: o ramo G1 seguia aberto e era o alvo da v2.
+
+\begin{table}[htbp]
+\centering
+\caption{O que o red achou na v1.}
+\label{qd:v1}
+\small
+\begin{tabular}{L{1.2cm}L{10.2cm}L{1.2cm}L{1.2cm}}
+\toprule
+Folha & Resultado & Min. & Ref. \\
+\midrule
+F1.3 & sucesso: o verificador de licença trocado por um stub que sempre libera & 15 & \#16 \\
+F1.2 & sucesso: o salto condicional do portão de licença anulado & 5 & \#18 \\
+F1.1 & sucesso: o IL da validação editado para aceitar assinatura inválida & 10 & \#20 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Confirmou-se a expectativa do plano: com a licença forte, o caminho mais barato virou o patch no binário. As três folhas de G1 caíram em 5 a 15 minutos, sem tocar na criptografia, e o custo do caminho mais barato não subiu: 5 minutos nas duas builds, copiando a licença na v0 e anulando o salto na v1. A v1 fechou G3 (F3.1 a F3.3), provada pelos testes do red e pelas variantes da v1, mas ficou demonstrado na prática que a raiz do problema era a integridade do binário. A partir deste ciclo, o red ganhou um segundo atacante.
+
+\subsection{v2: a integridade do binário}
+
+\begin{itemize}[noitemsep]
+\item Tag \texttt{v2} (commit \texttt{fe55fa9}), entregue em 09/11/2026; período de ataque de 09/11 a 12/11.
+\item Zip \texttt{neuromock-v2-win-x64.zip}, SHA-256:\\ \texttt{\footnotesize b04f75ae110764d09086fd4d7a36be8dc33add56442a337aa12c44f6e7f8490d}
+\end{itemize}
+
+Com a licença da v1, o caminho mais barato que sobrava era o patch no binário: mudar o resultado da verificação, apagar o desvio que a consulta ou trocar a chave pública embutida pela de um atacante. A v2 não escondeu o desvio; protegeu o binário que o contém, com quatro peças:
+\begin{itemize}
+\item \textbf{Manifesto assinado}: um \texttt{manifesto.json} na raiz do pacote com o SHA-256 dos 221 arquivos publicados, assinado com a chave do fornecedor na esteira, depois do publish. Só a licença e a solicitação de ativação ficam de fora, porque mudam na máquina do cliente. Um byte alterado em qualquer arquivo invalida a assinatura; corrigir o hash no manifesto não adianta, e assinar de novo exige a chave privada.
+\item \textbf{Duas guardas diferentes}: a primeira começa na inicialização e confere o pacote inteiro, com o verificador e a chave do Core; a segunda nasce com a janela do treino e confere os arquivos de onde o código em execução foi de fato carregado, com implementação e chave próprias do App. Um mesmo patch não derruba as duas, e um assembly carregado de fora da pasta também acusa.
+\item \textbf{Resposta atrasada, com falha fechada}: as guardas não decidem nada, só deixam um selo. Duas respostas, em outros pontos do aplicativo, conferem os selos em momentos sorteados, entre 4 e 14 segundos depois de o treino abrir, e por caminhos diferentes: uma fecha a janela, a outra encerra o processo fora da thread da interface. Selo ausente conta como adulteração. O patch parece ter funcionado e, quando o treino fecha, a pilha não leva à checagem.
+\item \textbf{Chave pública protegida}: uma segunda cópia da chave mora no App, em outra forma, mascarada. Cada guarda confere o manifesto com uma das cópias, então trocar a chave exige achar as duas, além de assinar um manifesto próprio e emitir uma licença própria.
+\end{itemize}
+
+O desenho veio com decisões explícitas. Os nomes no IL continuaram claros de propósito, porque renomear era a v3, e juntar os dois controles borraria a medição do custo de cada um. A resposta nunca mexe no sinal nem no índice: num aplicativo clínico, um falso positivo da integridade não pode virar feedback errado para o paciente, então ela só fecha o treino. As respostas só existem em Release, e não por uma flag: o código delas não é compilado em Debug, e o de Release não tem caminho para desligá-las. A mesma chave das licenças assina o manifesto, com um cabeçalho de conteúdo diferente, para que uma assinatura de licença não sirva de assinatura de manifesto; no produto real, seriam chaves separadas. Por fim, o harness passou a observar o treino por 30 segundos, porque, com resposta atrasada, ver a janela abrir deixou de bastar. O plano registrou ainda um limite: sem atualização automática, a v1 continua publicada e patchável, o que no produto real pede renovabilidade.
+
+\begin{table}[htbp]
+\centering
+\caption{O que o red achou na v2.}
+\label{qd:v2}
+\small
+\begin{tabular}{L{1.2cm}L{10.2cm}L{1.2cm}L{1.2cm}}
+\toprule
+Folha & Resultado & Min. & Ref. \\
+\midrule
+F1.1 & falha: a integridade pega o patch; a janela abre e o app se encerra sozinho em cerca de 12 s & 15 & \\
+F1.2 & falha: o NOP no portão abre a janela, mas a integridade encerra o processo & 3 & \\
+F1.3 & falha: o stub abre a janela, mas a integridade encerra o processo & 3 & \\
+F2.1 & sucesso: com o depurador (Set Next Statement), o app abre sem licença & 10 & \#26 \\
+F2.2 & sucesso: hook com Harmony no verificador de licença & 3 & \#27 \\
+F2.3 & falha: sem alvo, porque não há flag de licença persistente em memória & 4 & \\
+H1.2 & sucesso: os parâmetros do DSP saem do recurso embutido no Core & 5 & \#30 \\
+H2.2 & sucesso: a reimplementação reproduz a saída do DSP & 7 & \#32 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A v2 fechou F1.1, F1.2 e F1.3: os testes do red, escritos contra a v1, passaram a ver o treino fechar sozinho. E confirmou-se de novo a expectativa: com o binário conferido, o caminho mais barato saiu do arquivo e foi para a execução, onde a verificação de arquivo não alcança, com o hook em 3 minutos. Ficaram 7 folhas abertas, 4 delas medidas.
+
+\subsection{v3: execução e ofuscação}
+
+\begin{itemize}[noitemsep]
+\item Tag \texttt{v3} (commit \texttt{47575ee}), entregue em 11/11/2026 e consolidada em 12/11; período de ataque de 12/11 a 17/11.
+\item Zip \texttt{neuromock-v3-win-x64.zip}, SHA-256:\\ \texttt{\footnotesize acc3510b4227a4d66ff0efcd80dcd8964a25f0063a0fe5a700c28a62d9a1c35c}
+\end{itemize}
+
+Com o binário conferido, a v3 encareceu os dois caminhos que sobravam: manipular o aplicativo em execução e ler o algoritmo, que ainda viajava com os parâmetros em claro e numa lógica que descompila quase em fonte. Foram cinco peças:
+\begin{itemize}
+\item \textbf{Anti-debug (F2.1)}: em Release, uma verificação de depurador, pelas APIs do .NET e pelas do Windows \texttt{IsDebuggerPresent} e \texttt{CheckRemoteDebuggerPresent}, deixa um selo na inicialização, e as respostas atrasadas conferem o depurador de novo no momento sorteado, pegando também quem anexa depois de o treino abrir.
+\item \textbf{Anti-hook por integridade em runtime (F2.2)}: o método de decisão da licença é compilado antecipadamente e o início do seu código nativo é lido; um detour, como os padrões de salto que o Harmony e o MonoMod escrevem no prólogo, deixa o selo negativo.
+\item \textbf{Estado de licença redundante (F2.3)}: não há uma flag \enquote{licenciado} única em memória. As respostas atrasadas reverificam a licença do zero, com assinatura, máquina e prazo, no momento sorteado, e conferem a consistência de uma cópia redundante e codificada do estado.
+\item \textbf{Parâmetros fora de arquivo em claro (H1.2)}: o \texttt{parametros.json} embutido saiu do pacote; os números do pipeline passaram a ser decodificados em runtime de um bloco de bytes mascarado, sem JSON em claro e sem constantes numéricas legíveis no IL.
+\item \textbf{Renomeação do algoritmo (H2.1, parcial, e H2.2)}: o Obfuscar, gratuito e com versão fixada, renomeia os membros internos dos namespaces do algoritmo no Core, depois do publish e antes de assinar o manifesto, que passa a cobrir os bytes ofuscados. A API pública é preservada, para o App não ofuscado continuar ligando.
+\end{itemize}
+
+As decisões da v3 também ficaram registradas. Tudo o que ela detecta alimenta as mesmas duas respostas atrasadas da v2, com falha fechada e só em Release. A renomeação atingiu só o algoritmo: licenciamento e integridade ficaram legíveis de propósito, para que os testes do red, que acham o alvo pelo nome, continuassem válidos, já que a licença não depende de obscuridade e é protegida pela integridade e pelos controles de execução. O fluxo de controle ficou de fora, porque nenhuma ferramenta gratuita o ofusca de forma estável no .NET~10 com Avalonia; a lacuna foi registrada como teto honesto, para ser coberta na v4.
+
+A esteira pegou dois falsos positivos do próprio blue antes da release. O anti-hook comparava o código nativo do método com uma linha de base e quebrava com a recompilação do .NET do nível 0 para o nível 1 (tier-0 para tier-1); virou detecção do padrão de salto do detour. E a integridade falhava quando o antivírus segurava um arquivo recém-criado; virou leitura com nova tentativa. Os dois teriam fechado o treino de um usuário legítimo, e foram pegos pelo controle positivo.
+
+\begin{table}[htbp]
+\centering
+\caption{O que o red achou na v3.}
+\label{qd:v3}
+\small
+\begin{tabular}{L{1.2cm}L{10.2cm}L{1.2cm}L{1.2cm}}
+\toprule
+Folha & Resultado & Min. & Ref. \\
+\midrule
+F2.1 & falha: o Set Next Statement abre o treino sob o depurador, mas o anti-debug fecha a janela em cerca de 5 s & 6 & \#40 \\
+F2.3 & falha: editar a flag em runtime abre o treino, mas a reverificação e o anti-debug fecham a janela em cerca de 6 s & 7 & \#40 \\
+F2.2 & falha no teste T-F2.2: o anti-hook pega o Harmony injetado no carregamento do runtime & teste & \\
+H1.2 & falha no teste T-H1.2: o recurso em claro sumiu & teste & \\
+H2.1 & sucesso: o módulo do algoritmo localizado no Core ofuscado & 5 & \#36 \\
+H1.1 & sucesso: o pipeline do DSP reconstruído a partir do Core ofuscado & 6 & \#38 \\
+H2.2 & sucesso no teste T-H2.2: o oráculo reproduz a saída do binário bit a bit & teste & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A v3 fechou F2.1, F2.2, F2.3 e H1.2, e com isso a árvore 1 inteira. H2.2 seguiu aberta: a renomeação encarece entender o algoritmo do zero, mas não muda a saída nem a API pública, então quem já entendeu reproduz. Sobraram 3 folhas abertas, todas da árvore 2. O controle positivo rodou completo e verde contra o zip ofuscado e assinado.
+
+\subsection{v4: Native AOT}
+
+\begin{itemize}[noitemsep]
+\item Tag \texttt{v4} (commit \texttt{2eca865}), entregue em 13/11/2026 e consolidada em 16/11; ataques de 13/11 a 15/11.
+\item Zip \texttt{neuromock-v4-win-x64.zip}, SHA-256:\\ \texttt{\footnotesize 06e3ec01cc658348b46d9e6d0728b1547d04b0e7589fb5db926b9ab8f9007a6d}
+\end{itemize}
+
+Com o binário conferido e a execução encarecida, o que ainda viajava no cliente era o IL gerenciado: App e Core descompilavam quase em fonte, e os ataques que reescrevem ou leem esse IL seguiam com alvo. A v4 publicou o aplicativo em .NET Native AOT \parencite{nativeaot}: o publish win-x64 compila todo o código gerenciado, do App ao runtime, num único executável nativo, sem IL nem metadados gerenciados. Sobram o \texttt{NeuroMock.exe} e as bibliotecas nativas do Avalonia (Skia, HarfBuzz e ANGLE); somem o \texttt{NeuroMock.dll}, o \texttt{NeuroMock.Core.dll} e os arquivos de configuração do runtime. As peças foram quatro:
+\begin{itemize}
+\item \textbf{Publicação nativa}: \texttt{PublishAot} no App e \texttt{IsAotCompatible} no Core. As ligações compiladas do Avalonia e o MVVM por geração de código já evitavam reflexão, então o AOT compilou e rodou sem configuração extra.
+\item \textbf{IL de G1 e G2 sem alvo}: os ataques em IL, como o patch do salto, o stub do verificador e o hook injetado no carregamento do runtime, dependem de um assembly gerenciado e de JIT, que o executável nativo não tem.
+\item \textbf{Guarda 2 adaptada}: no AOT, todo o código em execução está no \texttt{NeuroMock.exe}, então a guarda passou a conferir o hash da imagem em execução contra o manifesto, com a cópia da chave que mora no App, mantendo a falha fechada.
+\item \textbf{Ofuscação subsumida}: o passo do Obfuscar saiu da esteira, porque não há mais Core em IL a renomear; o AOT remove nomes e constantes de vez e cobre a lacuna de fluxo de controle da v3.
+\end{itemize}
+
+A v4 também teve um episódio de gestão de componentes de terceiros. Ligar o AOT puxa o compilador nativo, e a versão que vinha com o SDK~10.0.401 (ILCompiler~10.0.12) tinha uma vulnerabilidade de severidade alta (GHSA-p3jp-9v83-76w9, leitura fora dos limites no decodificador Brotli), que a auditoria de dependências da esteira barraria. A correção foi fixar no \texttt{global.json} o SDK~10.0.403, cujo ILCompiler~10.0.14 está fora do aviso; fixar o compilador diretamente como pacote quebrava o AOT. As demais decisões repetiram o teto honesto: integridade e licença seguem no cliente, então o AOT é endurecimento, não barreira; a detecção de hook em IL ficou inerte no nativo, de propósito, porque o próprio AOT passou a ser o controle da folha; e H2.2 não fecha, porque o algoritmo ainda roda no cliente. Na verificação do blue, o publish nativo passou com a auditoria ligada e o manifesto assinado (4 arquivos), os 84 testes funcionais passaram, e o treino abriu e continuou aberto com o pacote legítimo e fechou sozinho em cerca de 6 segundos com o pacote adulterado.
+
+\begin{table}[htbp]
+\centering
+\caption{O que o red achou na v4.}
+\label{qd:v4}
+\small
+\begin{tabular}{L{1.2cm}L{10.2cm}L{1.2cm}L{1.2cm}}
+\toprule
+Folha & Resultado & Min. & Ref. \\
+\midrule
+F1.1 & falha: sem IL e sem \texttt{NeuroMock.dll} para editar; os nomes vazam como string, mas o patch da v1 não se aplica & 10 & \#43 \\
+F1.2 & falha: um patch de 1 byte no executável muda o SHA-256 e não bate com o manifesto assinado; sem a chave, não há como reassinar & 30 & \#43 \\
+F1.3 & falha: não há método gerenciado para trocar por stub; mesma parede da integridade & 5 & \#43 \\
+H2.1 & sucesso: as strings do executável localizam o módulo do algoritmo & 7 & \#44 \\
+H1.1 & sucesso: o Ghidra, com IA, reconstrói o pipeline a partir do código nativo & 10 & \#46 \\
+H2.2 & sucesso: a reimplementação reproduz o pipeline, conferido campo a campo & 5 & \#45 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As folhas da árvore 1 seguiram fechadas, e a árvore 2 seguiu aberta, agora por engenharia reversa do código nativo, e não por descompilação gerenciada: o metadado de tipos ainda vaza como texto no executável. A v4 foi a última build de controle do calendário. O que fecha a árvore 2 de vez é mover o processamento de sinal para um servidor, recomendação que acorda o ramo G4.

@@ -1,0 +1,72 @@
+\section{Resultados}
+\label{sec:resultados}
+
+\subsection{O registro de custo}
+
+O registro de custo (\texttt{docs/metricas/custo-ataques.csv}, transcrito no Apêndice~\ref{ap:custos}) reúne 25 tentativas ao longo das cinco builds: 15 com sucesso e 10 que falharam, somando 231 minutos. Foram dois atacantes, com 13 e 12 tentativas, todas em caixa preta, e 14 das 25 tiveram apoio de IA. Nenhuma tentativa chegou ao timebox de 2 horas: as que falharam pararam antes, entre 3 e 30 minutos.
+
+\subsection{Folhas abertas por build}
+
+As folhas abertas caíram de 13 na v0 para 10 na v1, 7 na v2 e 3 na v3 e na v4 (Quadro~\ref{qd:estados}). A árvore 1 inteira fechou na v3 e continuou fechada na v4. As três que sobraram são todas da árvore 2: descompilar e ler (H1.1), localizar o módulo (H2.1) e compreender a lógica (H2.2). Nenhuma folha fechada reabriu em nenhuma build.
+
+\subsection{Custo do ataque por build}
+
+A métrica principal é o custo, em minutos, do ataque mais barato que funcionou em cada build. Na árvore 1, basta uma folha, porque a raiz é OR. Na árvore 2, conta o caminho completo mais barato: H1.1 ou H1.2 sozinhas, ou H2.1 somada a H2.2, porque H2 é um nó AND. Quando nenhum ataque funcionou, o tempo gasto sem sucesso é um limite inferior do custo, e não o custo. A Figura~\ref{fig:custo} e o Quadro~\ref{qd:custo} mostram o resultado.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  ybar,
+  width=\textwidth, height=8cm,
+  bar width=13pt,
+  ymin=0, ymax=52,
+  ylabel={minutos},
+  symbolic x coords={v0,v1,v2,v3,v4},
+  xtick=data,
+  enlarge x limits=0.12,
+  ymajorgrids, grid style={gray!25},
+  nodes near coords,
+  nodes near coords style={font=\scriptsize},
+  legend style={at={(0.5,-0.14)}, anchor=north, legend columns=1, font=\small, draw=none},
+  legend cell align=left
+]
+\addplot[fill=laranja, draw=none, bar shift=-7.5pt] coordinates {(v0,5) (v1,5) (v2,3)};
+\addplot[fill=azul, draw=none, bar shift=-7.5pt, nodes near coords={$\geq$\pgfmathprintnumber{\pgfplotspointmeta}}] coordinates {(v3,13) (v4,45)};
+\addplot[fill=laranjaclaro, draw=none, bar shift=7.5pt] coordinates {(v2,5) (v3,6) (v4,10)};
+\legend{Pirataria: minutos até o ataque funcionar, Pirataria: minutos gastos sem sucesso (o custo real é maior), Algoritmo: caminho completo mais barato}
+\end{axis}
+\end{tikzpicture}
+\caption{Custo do ataque por build. Na v0 e na v1, a árvore 2 não foi medida, porque nenhum controle mirava nela.}
+\label{fig:custo}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Ataque mais barato por build e por árvore.}
+\label{qd:custo}
+\small
+\begin{tabular}{lL{6.3cm}L{6.3cm}}
+\toprule
+Build & Pirataria (árvore 1) & Algoritmo (árvore 2) \\
+\midrule
+v0 & 5 min: copiar a licença de outra máquina (F3.1) & não medido \\
+v1 & 5 min: anular o salto do portão de licença (F1.2) & não medido \\
+v2 & 3 min: hook com Harmony no verificador (F2.2) & 5 min: extrair os parâmetros (H1.2) \\
+v3 & nenhum: depurador e edição de memória falharam (13 min sem sucesso) & 6 min: reconstruir o pipeline a partir do Core ofuscado (H1.1) \\
+v4 & nenhum: patch no executável nativo barrado pelo manifesto assinado (45 min sem sucesso) & 10 min: reconstruir o pipeline no Ghidra, com IA (H1.1) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Na pirataria, o custo não subiu de forma suave. Ficou em 5 minutos da v0 para a v1, caiu para 3 na v2 e depois deixou de existir. A queda da v2 é ela mesma um resultado: fechar o caminho estático empurrou o atacante para a execução, que ainda estava aberta, como o plano previa. Cada build fechou o caminho mais barato que sobrava, até que não sobrou caminho conhecido. Na v4, patchear o executável nativo esbarrou no manifesto assinado: um byte alterado muda o SHA-256, a guarda 2 confere a imagem em execução contra o manifesto, e sem a chave privada não há como reassinar.
+
+No algoritmo, o custo do caminho completo foi de 5 minutos na v2 para 6 na v3 e 10 na v4. Ele dobrou, e o atacante precisou trocar de ferramenta, do dnSpy para o Ghidra e para a busca de strings no binário. A árvore seguiu aberta porque o algoritmo continua executando na máquina do atacante.
+
+\subsection{As ferramentas do atacante}
+
+As ferramentas registradas acompanham a escalada. Na v0 bastaram um editor de texto, o PowerShell e o ILSpy. Na v1, o ILSpy e o dnlib, com IA. Na v2 e na v3, o dnSpyEx, o Harmony e scripts com dnlib. Na v4, sem IL para abrir, o red passou para a análise de strings e do formato PE, com PowerShell e Python, e para o Ghidra. A mudança de ferramenta é o efeito visível de cada controle: o atacante precisou de outra habilidade para chegar ao mesmo lugar, ou não chegou.
+
+\subsection{O volume do processo}
+
+Até a data deste relatório, o repositório reunia 34 pull requests, 14 issues de ataque e mais de 70 execuções da esteira, além das cinco releases com SHA-256. Nenhuma folha fechada reabriu. Os dois falsos positivos que a esteira pegou na v3, antes da release, mostram o outro lado do controle positivo: além de impedir que um build quebrado pareça seguro, ele impede que uma defesa defeituosa feche o treino de um usuário legítimo.

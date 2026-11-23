@@ -1,0 +1,70 @@
+\section{Modelagem de ameaças}
+\label{sec:ameacas}
+
+O primeiro artefato do processo é a modelagem de ameaças (\texttt{docs/01-threat-model.md}). Ela corresponde à prática de modelagem de ameaças do SDL \parencite{howard2006} e à análise de risco arquitetural dos Touchpoints \parencite{mcgraw2006}, e foi feita uma vez, no início, para derivar e justificar o escopo.
+
+\subsection{Cenário e fluxo de dados}
+
+O software executa inteiramente na máquina do cliente, e o modelo de atacante é o MATE: o adversário controla o próprio ambiente de execução e pode inspecionar, copiar e alterar o binário. A premissa que orienta todo o trabalho já aparece aqui: contra quem controla a máquina não há proteção absoluta, e o objetivo é elevar o custo do ataque acima do valor do ativo. A Figura~\ref{fig:dfd} mostra o diagrama de fluxo de dados com as fronteiras de confiança, isto é, os pontos em que o controle do fornecedor termina.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  caixa/.style={draw, rounded corners=2pt, align=center, font=\small, text width=3.4cm, minimum height=1.1cm, inner sep=3pt, fill=white},
+  seta/.style={-{Stealth[length=2.2mm]}, thick},
+  dupla/.style={{Stealth[length=2.2mm]}-{Stealth[length=2.2mm]}, thick}
+]
+\node[caixa] (inst) at (0,3.4) {Instalador\\canal de distribuição};
+\node[caixa] (app) at (-4.4,0) {App Avalonia\\telas e portão de licença};
+\node[caixa] (core) at (0,0) {Core\\licença, integridade e DSP};
+\node[caixa] (arq) at (4.4,0) {Arquivos locais\\licença e sessão};
+\node[font=\small\bfseries, anchor=south west] (rotulo) at (-6.2,0.75) {F1: máquina do cliente, território do atacante};
+\node[draw, dashed, rounded corners=4pt, inner sep=8pt, fit=(app)(core)(arq)(rotulo)] (f1) {};
+\node[caixa] (sensor) at (0,-3.4) {Sensor EEG\\BrainBit Flex 4};
+\draw[seta] (inst) -- node[right, font=\footnotesize] {instala (F2)} (f1.north);
+\draw[dupla] (app) -- (core);
+\draw[dupla] (core) -- (arq);
+\draw[dupla] (f1.south) -- node[right, font=\footnotesize] {Bluetooth LE (F3)} (sensor);
+\end{tikzpicture}
+\caption{Diagrama de fluxo de dados e fronteiras de confiança.}
+\label{fig:dfd}
+\end{figure}
+
+As fronteiras de confiança são três:
+\begin{itemize}
+\item \textbf{F1, a máquina do cliente}: território hostil. Quem instala tem permissão de administrador e pode ler e adulterar tudo: o binário, os arquivos locais e a memória do processo.
+\item \textbf{F2, o canal de distribuição}: de onde o aplicativo é obtido. Sem verificação de assinatura, vira vetor de cadeia de suprimentos. No produto real, o instalador não tem atualização automática, o que também significa que versões antigas continuam circulando.
+\item \textbf{F3, o Bluetooth do EEG}: enlace entre o aplicativo e o sensor, passível de interceptação e de injeção.
+\end{itemize}
+
+\subsection{STRIDE por elemento}
+
+O STRIDE foi aplicado a cada elemento do diagrama para derivar e justificar o escopo, não como atividade paralela. O Quadro~\ref{qd:stride} resume o resultado. A escala de risco é qualitativa: o impacto no negócio, pesado pelo que o atacante consegue fazer tendo a máquina na mão.
+
+\begin{table}[htbp]
+\centering
+\caption{STRIDE por elemento do fluxo de dados, com risco qualitativo.}
+\label{qd:stride}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{L{2.6cm}ccccccL{3.8cm}}
+\toprule
+Elemento & S & T & R & I & D & E & Observação \\
+\midrule
+App (binário) & -- & Alto & -- & Alto & baixo & baixo & patch de licença; extração do algoritmo \\
+Arquivos locais & -- & Médio & -- & médio & baixo & -- & licença e sessão em claro \\
+Instalador e canal & Médio & Médio & -- & baixo & baixo & -- & instalador ou atualização maliciosos \\
+Bluetooth do EEG & baixo & baixo & -- & baixo & baixo & -- & sinal de um sensor isolado, de baixo valor \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+{\footnotesize S: Spoofing; T: Tampering; R: Repudiation; I: Information disclosure; D: Denial of service; E: Elevation of privilege.}
+\end{table}
+
+O risco residual se concentra em Tampering e Information disclosure sobre o binário, que viram as duas histórias de atacante: adulterar o aplicativo para pular a licença e ler o algoritmo. Os demais vetores têm baixo valor neste produto: a leitura de EEG de um sensor isolado, sem contexto clínico, diz pouco por si.
+
+\subsection{Adversários e escopo}
+
+Ameaça sem adversário é paranoia sem foco. O trabalho considera dois perfis, que geram as duas histórias. A \textbf{clínica pirata} quer usar o software sem pagar; tem motivação econômica e habilidade baixa a média, e gera a história de pirataria. O \textbf{concorrente} quer o algoritmo proprietário de processamento de sinal; tem habilidade alta, e gera a história de roubo de propriedade intelectual.
+
+Duas classes de ameaça ficaram fora do escopo, por decisão registrada no início do projeto: o insider que fuça dados de paciente, porque o dado de EEG de um sensor isolado tem baixo valor por si, e os ataques de rede clássicos, como o homem no meio, porque o software é local. O modelo também registra uma pendência de revisão: o produto real tem um canal local (loopback) de integração com jogos, que deve entrar no diagrama como superfície conhecida e fora de escopo.
